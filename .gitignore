@@ -1,0 +1,20 @@
+# Virtual environment
+.venv/
+
+# Large data files
+*.zip
+*.tar.gz
+*.npz
+*.pt
+
+# Data directories
+glyph_grids/
+checkpoints_ae/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo

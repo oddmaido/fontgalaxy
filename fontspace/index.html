@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Font Galaxy</title>
+    <style>
+        @font-face {
+            font-family: 'IBM Plex Mono';
+            src: url('/static/IBMPlexMono-Medium.ttf') format('truetype');
+            font-weight: 500;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'IBM Plex Mono', monospace;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        #container { width: 100vw; height: 100vh; }
+
+        /* Top Bar */
+        #top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 18px 30px;
+            font-size: 11px;
+        }
+        #top-bar > div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #top-bar .indicator {
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        #top-bar span:not(.indicator) {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Crosshair */
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            pointer-events: none;
+        }
+        #crosshair .circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+        }
+        #crosshair .cross {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+        }
+        #crosshair .cross::before,
+        #crosshair .cross::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+        }
+        #crosshair .cross::before {
+            width: 1px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #crosshair .cross::after {
+            width: 100%;
+            height: 1px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        /* Corner brackets */
+        #crosshair .corner {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-color: rgba(255, 255, 255, 0.4);
+            border-style: solid;
+            border-width: 0;
+        }
+        #crosshair .corner.tl { top: 20px; left: 20px; border-top-width: 1px; border-left-width: 1px; }
+        #crosshair .corner.tr { top: 20px; right: 20px; border-top-width: 1px; border-right-width: 1px; }
+        #crosshair .corner.bl { bottom: 20px; left: 20px; border-bottom-width: 1px; border-left-width: 1px; }
+        #crosshair .corner.br { bottom: 20px; right: 20px; border-bottom-width: 1px; border-right-width: 1px; }
+
+        /* Bottom Panel */
+        #bottom-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 280px;
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            padding: 25px 30px;
+            gap: 50px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #bottom-panel h3 {
+            font-size: 10px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Controls */
+        #controls-section { }
+        #controls-section .title {
+            font-size: 12px;
+            margin-bottom: 18px;
+            letter-spacing: 0.15em;
+        }
+        #controls-table {
+            font-size: 10px;
+        }
+        #controls-table .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 0;
+        }
+        #controls-table .row:last-child {
+            border-bottom: none;
+        }
+        #controls-table .key {
+            color: rgba(255, 255, 255, 0.35);
+        }
+        #controls-table .action {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Context */
+        #context-section {
+            max-width: 550px;
+        }
+        #context-section p {
+            font-size: 9px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+        }
+
+        /* Right Panel - Blended Fonts */
+        #font-panel {
+            position: absolute;
+            top: 80px;
+            right: 30px;
+            width: 220px;
+        }
+        #font-panel h3 {
+            font-size: 10px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        #preview-image {
+            width: 100%;
+            height: auto;
+            background: #fff;
+            margin-bottom: 15px;
+            image-rendering: pixelated;
+        }
+        #panel-about {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.6;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #neighbors {
+            font-size: 10px;
+        }
+        .neighbor {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .neighbor:last-child {
+            border-bottom: none;
+        }
+        .neighbor-name {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .neighbor-weight {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Specimen Modal */
+        #modal-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 999;
+        }
+        #specimen-modal {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #000;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            z-index: 1000;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        #specimen-modal h3 {
+            font-size: 12px;
+            font-weight: 500;
+            margin: 0 0 15px 0;
+            letter-spacing: 0.1em;
+        }
+        #specimen-modal img {
+            max-width: 100%;
+            max-height: 70vh;
+            background: #111;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            image-rendering: pixelated;
+        }
+        #specimen-modal .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #specimen-modal .close-btn:hover { color: #fff; }
+
+        /* Loading */
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        #loading h2 {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            margin-bottom: 30px;
+        }
+        #loading-bar {
+            width: 200px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 0 auto 15px;
+        }
+        #loading-progress {
+            height: 100%;
+            background: #fff;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        #loading-status {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+
+    <div id="loading">
+        <h2>FONT GALAXY</h2>
+        <div id="loading-bar"><div id="loading-progress"></div></div>
+        <div id="loading-status">LOADING UNIVERSE...</div>
+    </div>
+
+    <div id="top-bar" style="display: none;">
+        <div><span class="indicator"></span><span id="position">POSITION (0, 0, 0)</span></div>
+        <div><span class="indicator"></span><span id="speed-display">SPEED: 50%</span></div>
+        <div><span class="indicator"></span><span id="stars-count">STARS: 0</span></div>
+    </div>
+
+    <div id="crosshair" style="display: none;">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <div class="circle"></div>
+        <div class="cross"></div>
+    </div>
+
+    <div id="font-panel" style="display: none;">
+        <h3>BLENDED FONTS</h3>
+        <img id="preview-image" src="" alt="Font Preview">
+        <div id="panel-about">PROJECT BY MAI DO WISE 25/26<br>IG: @ODDMAIDO<br>DEVELOPED @BAUHAUS.TYPOGRAPHY</div>
+        <div id="neighbors"></div>
+    </div>
+
+    <div id="bottom-panel" style="display: none;">
+        <div id="controls-section">
+            <div class="title">FONT GALAXY</div>
+            <div id="controls-table">
+                <div class="row"><span class="key">W A S D /////</span><span class="action">MOVE</span></div>
+                <div class="row"><span class="key">ARROWS /////</span><span class="action">ROTATE</span></div>
+                <div class="row"><span class="key">SCROLL /////</span><span class="action">SPEED</span></div>
+                <div class="row"><span class="key">CLICK /////</span><span class="action">SELECT</span></div>
+            </div>
+        </div>
+
+        <div id="context-section">
+            <h3>CONTEXT</h3>
+            <p>The project is an interactive typographic space where fonts are translated into a navigable galaxy. Each typeface exists as a point in space, defined by its visual characteristics. By moving through this environment, users explore typography not as static text, but as a system of relationships, distances, and transformations. Fonts can be selected, compared, and morphed into one another, revealing typography as a fluid, computational medium rather than a fixed form.</p>
+        </div>
+    </div>
+
+    <div id="modal-overlay"></div>
+    <div id="specimen-modal">
+        <span class="close-btn">&times;</span>
+        <h3 id="specimen-name">FONT NAME</h3>
+        <img id="specimen-image" src="" alt="Font Specimen">
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Three.js setup
+        const container = document.getElementById('container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+        scene.fog = new THREE.FogExp2(0x000000, 0.08);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // State
+        const state = {
+            position: new THREE.Vector3(0, 0, 0),
+            velocity: new THREE.Vector3(0, 0, 0),
+            rotation: { x: 0, y: 0 },
+            speed: 0.05,
+            friction: 0.85,
+            keys: {},
+            stars: [],
+            starMesh: null,
+            bounds: null,
+            locked: false,
+            lastPreviewPos: null,
+            previewCooldown: 0,
+        };
+
+        // Input
+        document.addEventListener('keydown', e => state.keys[e.code] = true);
+        document.addEventListener('keyup', e => state.keys[e.code] = false);
+
+        document.addEventListener('mousemove', e => {
+            if (state.locked) {
+                state.rotation.y -= e.movementX * 0.002;
+                state.rotation.x -= e.movementY * 0.002;
+                state.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, state.rotation.x));
+            }
+        });
+
+        renderer.domElement.addEventListener('click', (e) => {
+            if (!state.locked) {
+                renderer.domElement.requestPointerLock();
+            } else {
+                selectFontAtCrosshair();
+            }
+        });
+
+        document.addEventListener('pointerlockchange', () => {
+            state.locked = document.pointerLockElement === renderer.domElement;
+        });
+
+        // Modal handlers
+        document.getElementById('modal-overlay').addEventListener('click', closeSpecimenModal);
+        document.querySelector('#specimen-modal .close-btn').addEventListener('click', closeSpecimenModal);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' || e.key === 'q' || e.key === 'Q') closeSpecimenModal();
+        });
+
+        function closeSpecimenModal() {
+            document.getElementById('specimen-modal').style.display = 'none';
+            document.getElementById('modal-overlay').style.display = 'none';
+            renderer.domElement.requestPointerLock();
+        }
+
+        async function showSpecimen(star) {
+            document.exitPointerLock();
+            try {
+                const res = await fetch(`/api/font_grid/${star.id}`);
+                if (!res.ok) throw new Error('Failed to load specimen');
+                const data = await res.json();
+
+                document.getElementById('specimen-name').textContent = star.name;
+                document.getElementById('specimen-image').src = `data:image/png;base64,${data.image}`;
+                document.getElementById('specimen-modal').style.display = 'block';
+                document.getElementById('modal-overlay').style.display = 'block';
+            } catch (e) {
+                console.error('Error loading specimen:', e);
+            }
+        }
+
+        function selectFontAtCrosshair() {
+            if (!state.displayStars) return;
+
+            let starsToCheck = [...state.displayStars];
+            if (state.activeNeighbors) {
+                for (const n of state.activeNeighbors) {
+                    starsToCheck.push({ id: n.id, name: n.name, x: n.x, y: n.y, z: n.z });
+                }
+            }
+
+            const screenCenterX = window.innerWidth / 2;
+            const screenCenterY = window.innerHeight / 2;
+
+            let bestStar = null;
+            let bestDist = 100;
+
+            for (const star of starsToCheck) {
+                const pos = new THREE.Vector3(star.x * SCALE, star.y * SCALE, star.z * SCALE);
+                pos.project(camera);
+
+                if (pos.z >= 1) continue;
+
+                const screenX = (pos.x * 0.5 + 0.5) * window.innerWidth;
+                const screenY = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+
+                const screenDist = Math.sqrt(
+                    (screenX - screenCenterX) ** 2 +
+                    (screenY - screenCenterY) ** 2
+                );
+
+                if (screenDist < bestDist) {
+                    bestDist = screenDist;
+                    bestStar = star;
+                }
+            }
+
+            if (bestStar) {
+                showSpecimen(bestStar);
+            }
+        }
+
+        document.addEventListener('wheel', e => {
+            state.speed = Math.max(0.01, Math.min(0.5, state.speed * (e.deltaY > 0 ? 0.85 : 1.15)));
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        const SCALE = 3.0;
+
+        function createDotTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 64, 64);
+            ctx.beginPath();
+            ctx.arc(32, 32, 28, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createStars(starsData) {
+            const maxStars = 15000;
+            let displayStars = starsData;
+            if (starsData.length > maxStars) {
+                displayStars = [];
+                const step = Math.ceil(starsData.length / maxStars);
+                for (let i = 0; i < starsData.length; i += step) {
+                    displayStars.push(starsData[i]);
+                }
+            }
+            state.displayStars = displayStars;
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(displayStars.length * 3);
+            const colors = new Float32Array(displayStars.length * 3);
+
+            for (let i = 0; i < displayStars.length; i++) {
+                const star = displayStars[i];
+                positions[i * 3] = star.x * SCALE;
+                positions[i * 3 + 1] = star.y * SCALE;
+                positions[i * 3 + 2] = star.z * SCALE;
+
+                const brightness = 0.4 + Math.random() * 0.2;
+                colors[i * 3] = brightness;
+                colors[i * 3 + 1] = brightness;
+                colors[i * 3 + 2] = brightness;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const dotTexture = createDotTexture();
+            const material = new THREE.PointsMaterial({
+                size: 0.12,
+                map: dotTexture,
+                vertexColors: true,
+                transparent: true,
+                alphaTest: 0.5,
+                opacity: 0.8,
+                sizeAttenuation: true,
+            });
+
+            state.starMesh = new THREE.Points(geometry, material);
+            scene.add(state.starMesh);
+
+            // Active font spheres
+            state.activeSphereMeshes = [];
+            const sphereGeometry = new THREE.SphereGeometry(0.02, 12, 12);
+            const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+            for (let i = 0; i < 5; i++) {
+                const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+                sphere.visible = false;
+                scene.add(sphere);
+                state.activeSphereMeshes.push(sphere);
+            }
+        }
+
+        function updateActiveStars(neighbors) {
+            if (!state.activeSphereMeshes || !neighbors) return;
+
+            for (let i = 0; i < 5; i++) {
+                const sphere = state.activeSphereMeshes[i];
+                if (i < neighbors.length) {
+                    const n = neighbors[i];
+                    sphere.position.set(n.x * SCALE, n.y * SCALE, n.z * SCALE);
+                    sphere.visible = true;
+                } else {
+                    sphere.visible = false;
+                }
+            }
+            state.activeNeighbors = neighbors;
+        }
+
+        function createLabels() {
+            state.labelContainer = document.createElement('div');
+            state.labelContainer.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;';
+            document.body.appendChild(state.labelContainer);
+            state.labels = [];
+
+            for (let i = 0; i < 5; i++) {
+                const label = document.createElement('div');
+                label.style.cssText = `
+                    position: absolute;
+                    color: rgba(255, 255, 255, 0.8);
+                    font-size: 10px;
+                    font-family: 'IBM Plex Mono', monospace;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    text-shadow: 0 0 4px #000, 0 0 2px #000;
+                    white-space: nowrap;
+                    transform: translate(-50%, -100%);
+                `;
+                state.labelContainer.appendChild(label);
+                state.labels.push(label);
+            }
+
+            state.proximityLabel = document.createElement('div');
+            state.proximityLabel.style.cssText = `
+                position: absolute;
+                color: #ffffff;
+                font-size: 11px;
+                font-family: 'IBM Plex Mono', monospace;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                text-shadow: 0 0 6px #000, 0 0 3px #000;
+                white-space: nowrap;
+                transform: translate(-50%, -100%);
+                display: none;
+            `;
+            state.labelContainer.appendChild(state.proximityLabel);
+        }
+
+        function updateProximityLabel() {
+            if (!state.displayStars || !state.proximityLabel) return;
+
+            let starsToCheck = [...state.displayStars];
+            if (state.activeNeighbors) {
+                for (const n of state.activeNeighbors) {
+                    starsToCheck.push({ id: n.id, name: n.name, x: n.x, y: n.y, z: n.z });
+                }
+            }
+
+            let bestStar = null;
+            let bestScore = Infinity;
+
+            const screenCenterX = window.innerWidth / 2;
+            const screenCenterY = window.innerHeight / 2;
+
+            for (const star of starsToCheck) {
+                const pos = new THREE.Vector3(star.x * SCALE, star.y * SCALE, star.z * SCALE);
+                pos.project(camera);
+
+                if (pos.z >= 1) continue;
+
+                const screenX = (pos.x * 0.5 + 0.5) * window.innerWidth;
+                const screenY = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+
+                const screenDist = Math.sqrt(
+                    (screenX - screenCenterX) ** 2 +
+                    (screenY - screenCenterY) ** 2
+                );
+
+                if (screenDist > 150) continue;
+
+                const dx = star.x * SCALE - state.position.x;
+                const dy = star.y * SCALE - state.position.y;
+                const dz = star.z * SCALE - state.position.z;
+                const dist3D = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+                const score = screenDist * 0.1 + dist3D;
+
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestStar = { star, screenX, screenY };
+                }
+            }
+
+            if (bestStar) {
+                state.proximityLabel.style.left = bestStar.screenX + 'px';
+                state.proximityLabel.style.top = (bestStar.screenY - 15) + 'px';
+                state.proximityLabel.textContent = bestStar.star.name;
+                state.proximityLabel.style.display = 'block';
+            } else {
+                state.proximityLabel.style.display = 'none';
+            }
+        }
+
+        function updateLabels() {
+            if (!state.activeNeighbors || !state.labels) return;
+
+            for (let i = 0; i < 5; i++) {
+                const label = state.labels[i];
+                if (i < state.activeNeighbors.length) {
+                    const n = state.activeNeighbors[i];
+                    const pos = new THREE.Vector3(n.x * SCALE, n.y * SCALE, n.z * SCALE);
+                    pos.project(camera);
+
+                    const x = (pos.x * 0.5 + 0.5) * window.innerWidth;
+                    const y = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+
+                    if (pos.z < 1) {
+                        label.style.left = x + 'px';
+                        label.style.top = (y - 10) + 'px';
+                        label.textContent = n.name;
+                        label.style.display = 'block';
+                    } else {
+                        label.style.display = 'none';
+                    }
+                } else {
+                    label.style.display = 'none';
+                }
+            }
+        }
+
+        function update(dt) {
+            const forward = new THREE.Vector3(0, 0, -1);
+            const right = new THREE.Vector3(1, 0, 0);
+
+            forward.applyEuler(new THREE.Euler(state.rotation.x, state.rotation.y, 0, 'YXZ'));
+            right.applyEuler(new THREE.Euler(0, state.rotation.y, 0, 'YXZ'));
+
+            const speed = state.speed * dt * 0.002;
+            if (state.keys['KeyW'] || state.keys['ArrowUp']) state.velocity.addScaledVector(forward, speed);
+            if (state.keys['KeyS'] || state.keys['ArrowDown']) state.velocity.addScaledVector(forward, -speed);
+            if (state.keys['KeyA'] || state.keys['ArrowLeft']) state.velocity.addScaledVector(right, -speed);
+            if (state.keys['KeyD'] || state.keys['ArrowRight']) state.velocity.addScaledVector(right, speed);
+
+            state.position.add(state.velocity);
+            state.velocity.multiplyScalar(state.friction);
+
+            if (state.bounds) {
+                const pad = 1;
+                state.position.x = Math.max(state.bounds.min_x - pad, Math.min(state.bounds.max_x + pad, state.position.x));
+                state.position.y = Math.max(state.bounds.min_y - pad, Math.min(state.bounds.max_y + pad, state.position.y));
+                state.position.z = Math.max(state.bounds.min_z - pad, Math.min(state.bounds.max_z + pad, state.position.z));
+            }
+
+            camera.position.copy(state.position);
+            camera.rotation.set(state.rotation.x, state.rotation.y, 0, 'YXZ');
+
+            // Update HUD
+            document.getElementById('position').textContent =
+                `POSITION (${state.position.x.toFixed(1)}, ${state.position.y.toFixed(1)}, ${state.position.z.toFixed(1)})`;
+            document.getElementById('speed-display').textContent = `SPEED: ${(state.speed * 1000).toFixed(0)}%`;
+            document.getElementById('stars-count').textContent = `STARS: ${state.stars.length.toLocaleString()}`;
+
+            // Preview update
+            state.previewCooldown -= dt;
+            if (state.previewCooldown <= 0) {
+                const moved = !state.lastPreviewPos ||
+                    state.position.distanceTo(state.lastPreviewPos) > 0.5;
+                if (moved) {
+                    updatePreview();
+                    state.lastPreviewPos = state.position.clone();
+                }
+                state.previewCooldown = 200;
+            }
+        }
+
+        async function updatePreview() {
+            try {
+                const x = state.position.x / SCALE;
+                const y = state.position.y / SCALE;
+                const z = state.position.z / SCALE;
+                const res = await fetch(`/api/blend?x=${x}&y=${y}&z=${z}&k=5`);
+                const data = await res.json();
+
+                if (data.image) {
+                    document.getElementById('preview-image').src = `data:image/png;base64,${data.image}`;
+                }
+
+                if (data.neighbors) {
+                    document.getElementById('neighbors').innerHTML = data.neighbors.map(n =>
+                        `<div class="neighbor">
+                            <span class="neighbor-name">${n.name}</span>
+                            <span class="neighbor-weight">${(n.weight * 100).toFixed(1)}%</span>
+                        </div>`
+                    ).join('');
+
+                    updateActiveStars(data.neighbors);
+                }
+            } catch (e) {
+                console.error('Preview error:', e);
+            }
+        }
+
+        let lastTime = performance.now();
+        function animate(time) {
+            const dt = time - lastTime;
+            lastTime = time;
+
+            update(dt);
+            updateLabels();
+            updateProximityLabel();
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        async function init() {
+            const loadingStatus = document.getElementById('loading-status');
+            const loadingProgress = document.getElementById('loading-progress');
+
+            try {
+                loadingStatus.textContent = 'LOADING BOUNDS...';
+                loadingProgress.style.width = '10%';
+                const boundsRes = await fetch('/api/bounds');
+                state.bounds = await boundsRes.json();
+
+                state.bounds.min_x *= SCALE;
+                state.bounds.max_x *= SCALE;
+                state.bounds.min_y *= SCALE;
+                state.bounds.max_y *= SCALE;
+                state.bounds.min_z *= SCALE;
+                state.bounds.max_z *= SCALE;
+
+                state.position.set(
+                    (state.bounds.min_x + state.bounds.max_x) / 2,
+                    (state.bounds.min_y + state.bounds.max_y) / 2,
+                    (state.bounds.min_z + state.bounds.max_z) / 2
+                );
+
+                loadingStatus.textContent = 'LOADING STARS...';
+                loadingProgress.style.width = '30%';
+                const starsRes = await fetch('/api/all_stars');
+                const starsData = await starsRes.json();
+                state.stars = starsData.stars;
+
+                loadingStatus.textContent = 'CREATING UNIVERSE...';
+                loadingProgress.style.width = '70%';
+                createStars(state.stars);
+                createLabels();
+
+                loadingStatus.textContent = 'READY';
+                loadingProgress.style.width = '100%';
+
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('top-bar').style.display = 'flex';
+                    document.getElementById('crosshair').style.display = 'block';
+                    document.getElementById('font-panel').style.display = 'block';
+                    document.getElementById('bottom-panel').style.display = 'grid';
+
+                    updatePreview();
+                    requestAnimationFrame(animate);
+                }, 500);
+
+            } catch (e) {
+                console.error('Init error:', e);
+                loadingStatus.textContent = 'ERROR: ' + e.message;
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
