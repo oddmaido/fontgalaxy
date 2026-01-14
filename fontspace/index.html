@@ -10,6 +10,16 @@
             src: url('/static/IBMPlexMono-Medium.ttf') format('truetype');
             font-weight: 500;
         }
+        @font-face {
+            font-family: 'Bianzhidai';
+            src: url('/static/bianzhidai-noBG-Base.otf') format('opentype');
+            font-weight: normal;
+        }
+        @font-face {
+            font-family: 'Bianzhidai Base';
+            src: url('/static/bianzhidai-Base-new.otf') format('opentype');
+            font-weight: normal;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #000;
@@ -29,13 +39,14 @@
             right: 0;
             display: flex;
             justify-content: space-between;
-            padding: 18px 30px;
+            padding: 20px 30px;
             font-size: 11px;
+            pointer-events: none;
         }
         #top-bar > div {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
         #top-bar .indicator {
             width: 6px;
@@ -43,173 +54,283 @@
             background: rgba(255, 255, 255, 0.8);
         }
         #top-bar span:not(.indicator) {
-            color: rgba(255, 255, 255, 0.7);
+            color: #fff;
         }
 
-        /* Crosshair */
-        #crosshair {
+
+        /* CSS Variables for consistent styling */
+        :root {
+            --hud-border: 1px;
+            --hud-line: rgba(255, 255, 255, 0.35);
+            --hud-text: rgba(255, 255, 255, 1);
+            --hud-text-muted: rgba(255, 255, 255, 1);
+            --hud-node: rgba(255, 255, 255, 0.95);
+            --pad: 16px;
+            --pad-sm: 10px;
+            --node-size: 7px;
+            --sidebar-w: clamp(280px, 22vw, 340px);
+        }
+
+        /* Corner Node Squares - FILLED solid white */
+        .corner-node {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 140px;
-            height: 140px;
+            width: var(--node-size);
+            height: var(--node-size);
+            background: var(--hud-node);
             pointer-events: none;
+            z-index: 10;
         }
-        #crosshair .circle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80px;
-            height: 80px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 50%;
-        }
-        #crosshair .cross {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 12px;
-            height: 12px;
-        }
-        #crosshair .cross::before,
-        #crosshair .cross::after {
-            content: '';
-            position: absolute;
-            background: rgba(255, 255, 255, 0.5);
-        }
-        #crosshair .cross::before {
-            width: 1px;
-            height: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        #crosshair .cross::after {
-            width: 100%;
-            height: 1px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        /* Corner brackets */
-        #crosshair .corner {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            border-color: rgba(255, 255, 255, 0.4);
-            border-style: solid;
-            border-width: 0;
-        }
-        #crosshair .corner.tl { top: 20px; left: 20px; border-top-width: 1px; border-left-width: 1px; }
-        #crosshair .corner.tr { top: 20px; right: 20px; border-top-width: 1px; border-right-width: 1px; }
-        #crosshair .corner.bl { bottom: 20px; left: 20px; border-bottom-width: 1px; border-left-width: 1px; }
-        #crosshair .corner.br { bottom: 20px; right: 20px; border-bottom-width: 1px; border-right-width: 1px; }
+        .corner-node.tl { top: 0; left: 0; transform: translate(-50%, -50%); }
+        .corner-node.tr { top: 0; right: 0; transform: translate(50%, -50%); }
+        .corner-node.bl { bottom: 0; left: 0; transform: translate(-50%, 50%); }
+        .corner-node.br { bottom: 0; right: 0; transform: translate(50%, 50%); }
 
-        /* Bottom Panel */
-        #bottom-panel {
+        /* Main UI Container - CSS Grid for perfect alignment */
+        #ui-container {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 280px;
+            bottom: 30px;
+            left: 30px;
+            right: 30px;
             display: grid;
-            grid-template-columns: 220px 1fr;
-            padding: 25px 30px;
-            gap: 50px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            grid-template-columns: 1fr var(--sidebar-w);
+            align-items: end;
+        }
+
+        /* Bottom Panel - uses CSS Grid for column widths */
+        #bottom-panel {
+            border: var(--hud-border) solid var(--hud-line);
+            border-right: none; /* Sidebar draws the shared border */
+            display: grid;
+            grid-template-columns: 140px 320px minmax(280px, 1fr) 230px;
+            position: relative;
         }
         #bottom-panel h3 {
-            font-size: 10px;
-            font-weight: 500;
-            margin-bottom: 12px;
+            font-family: 'Bianzhidai', monospace;
+            font-size: 11px;
+            font-weight: normal;
+            margin-bottom: 8px;
             letter-spacing: 0.1em;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--hud-text-muted);
         }
 
-        /* Controls */
-        #controls-section { }
-        #controls-section .title {
-            font-size: 12px;
-            margin-bottom: 18px;
-            letter-spacing: 0.15em;
+        /* Font Galaxy Title Section */
+        #title-section {
+            padding: var(--pad-sm);
+            border-right: var(--hud-border) solid var(--hud-line);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
-        #controls-table {
+        /* Corner nodes at title section right edge - FILLED */
+        #title-section::before,
+        #title-section::after {
+            content: '';
+            position: absolute;
+            width: var(--node-size);
+            height: var(--node-size);
+            background: var(--hud-node);
+            right: 0;
+        }
+        #title-section::before { top: 0; transform: translate(50%, -50%); }
+        #title-section::after { bottom: 0; transform: translate(50%, 50%); }
+        #title-section .title {
+            font-family: 'Bianzhidai', monospace;
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        /* Controls Section */
+        #controls-section {
+            padding: var(--pad-sm);
+            border-right: var(--hud-border) solid var(--hud-line);
+            position: relative;
+        }
+        /* Corner nodes at controls section right edge - FILLED */
+        #controls-section::before,
+        #controls-section::after {
+            content: '';
+            position: absolute;
+            width: var(--node-size);
+            height: var(--node-size);
+            background: var(--hud-node);
+            right: 0;
+        }
+        #controls-section::before { top: 0; transform: translate(50%, -50%); }
+        #controls-section::after { bottom: 0; transform: translate(50%, 50%); }
+
+        /* Controls Grid - layout only */
+        #controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 0;
+            font-size: 9px;
+            position: relative;
+            height: 100%;
+        }
+        /* Vertical divider - extends to outer frame */
+        #controls-grid::before {
+            content: '';
+            position: absolute;
+            top: calc(-1 * var(--pad-sm));
+            bottom: calc(-1 * var(--pad-sm));
+            left: 50%;
+            width: 1px;
+            background: var(--hud-line);
+            transform: translateX(-0.5px);
+        }
+        /* Horizontal divider - extends to outer frame */
+        #controls-grid::after {
+            content: '';
+            position: absolute;
+            left: calc(-1 * var(--pad-sm));
+            right: calc(-1 * var(--pad-sm));
+            top: 50%;
+            height: 1px;
+            background: var(--hud-line);
+            transform: translateY(-0.5px);
+        }
+        /* Grid cells - padding only, no borders */
+        #controls-grid .control-item {
+            padding: 8px 12px;
+        }
+
+        .control-key {
+            font-family: 'Bianzhidai Base', monospace;
+            color: #fff;
+            margin-bottom: 4px;
+            font-size: 10px;
+            letter-spacing: 0.08em;
+        }
+        .control-action {
+            font-family: 'IBM Plex Mono', monospace;
+            color: #fff;
             font-size: 10px;
         }
-        #controls-table .row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 6px 0;
-        }
-        #controls-table .row:last-child {
-            border-bottom: none;
-        }
-        #controls-table .key {
-            color: rgba(255, 255, 255, 0.35);
-        }
-        #controls-table .action {
-            color: rgba(255, 255, 255, 0.8);
-        }
 
-        /* Context */
+        /* Context Section - widest column */
         #context-section {
-            max-width: 550px;
+            padding: var(--pad);
+            border-right: var(--hud-border) solid var(--hud-line);
+            position: relative;
         }
+        /* Corner nodes at context section right edge - FILLED */
+        #context-section::before,
+        #context-section::after {
+            content: '';
+            position: absolute;
+            width: var(--node-size);
+            height: var(--node-size);
+            background: var(--hud-node);
+            right: 0;
+        }
+        #context-section::before { top: 0; transform: translate(50%, -50%); }
+        #context-section::after { bottom: 0; transform: translate(50%, 50%); }
         #context-section p {
+            font-family: 'IBM Plex Mono', monospace;
             font-size: 9px;
-            line-height: 1.8;
-            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.65;
+            color: var(--hud-text-muted);
             text-transform: uppercase;
         }
 
-        /* Right Panel - Blended Fonts */
-        #font-panel {
+        /* About Section */
+        #about-section {
+            padding: var(--pad);
+            position: relative;
+        }
+        /* Corner nodes at shared edge with sidebar */
+        #about-section::before,
+        #about-section::after {
+            content: '';
             position: absolute;
-            top: 80px;
-            right: 30px;
-            width: 220px;
+            width: var(--node-size);
+            height: var(--node-size);
+            background: var(--hud-node);
+            right: 0;
+        }
+        #about-section::before { top: 0; transform: translate(50%, -50%); }
+        #about-section::after { bottom: 0; transform: translate(50%, 50%); }
+        #about-section p {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            line-height: 1.65;
+            color: var(--hud-text-muted);
+        }
+
+        /* Right Panel - Blended Fonts (fixed width, stable layout) */
+        #font-panel {
+            width: var(--sidebar-w);
+            border: var(--hud-border) solid var(--hud-line);
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
         #font-panel h3 {
-            font-size: 10px;
-            font-weight: 500;
-            margin-bottom: 10px;
+            font-family: 'Bianzhidai', monospace;
+            font-size: 11px;
+            font-weight: normal;
+            margin-bottom: var(--pad-sm);
             letter-spacing: 0.1em;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--hud-text-muted);
+        }
+        /* Apply custom font to entire blended fonts column */
+        #font-panel {
+            font-family: 'Bianzhidai', monospace;
+        }
+        #preview-section {
+            padding: var(--pad);
         }
         #preview-image {
             width: 100%;
             height: auto;
             background: #fff;
-            margin-bottom: 15px;
             image-rendering: pixelated;
+            display: block;
         }
-        #panel-about {
-            font-size: 9px;
-            color: rgba(255, 255, 255, 0.5);
-            line-height: 1.6;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        #neighbors-section {
+            padding: var(--pad);
         }
+        /* Fixed-width grid for stable list alignment */
         #neighbors {
-            font-size: 10px;
+            font-size: 9px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
         }
         .neighbor {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: grid;
+            grid-template-columns: 1fr 56px;
+            align-items: baseline;
+            padding: 7px 0;
+            gap: 8px;
+        }
+        .neighbor:not(:last-child) {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .neighbor:first-child {
+            padding-top: 0;
         }
         .neighbor:last-child {
-            border-bottom: none;
+            padding-bottom: 0;
         }
         .neighbor-name {
-            color: rgba(255, 255, 255, 0.7);
+            font-family: 'Bianzhidai', monospace;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
         }
         .neighbor-weight {
-            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Bianzhidai', monospace;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+            flex-shrink: 0;
         }
 
         /* Specimen Modal */
@@ -237,6 +358,7 @@
             max-height: 90vh;
         }
         #specimen-modal h3 {
+            font-family: 'Bianzhidai', monospace;
             font-size: 12px;
             font-weight: 500;
             margin: 0 0 15px 0;
@@ -289,15 +411,72 @@
             font-size: 10px;
             color: rgba(255, 255, 255, 0.5);
         }
+
+        /* Void Warning */
+        #void-warning {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            z-index: 100;
+        }
+        #void-warning .message,
+        #void-warning .hint {
+            pointer-events: none;
+        }
+        #void-warning .message {
+            font-family: 'Bianzhidai', monospace;
+            font-size: 14px;
+            letter-spacing: 0.15em;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+        }
+        #void-warning .hint {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.1em;
+        }
+        #void-warning .key {
+            font-family: 'Bianzhidai Base', monospace;
+            color: #fff;
+            font-size: 13px;
+        }
+        #return-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-family: 'Bianzhidai', monospace;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: #fff;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.2s;
+        }
+        #return-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #fff;
+        }
     </style>
 </head>
 <body>
     <div id="container"></div>
 
     <div id="loading">
-        <h2>FONT GALAXY</h2>
+        <h2>FONT SPACE</h2>
         <div id="loading-bar"><div id="loading-progress"></div></div>
         <div id="loading-status">LOADING UNIVERSE...</div>
+    </div>
+
+    <div id="void-warning">
+        <div class="message">YOU ARE IN THE VOID</div>
+        <div class="hint">PRESS <span class="key">R</span> OR CLICK BELOW TO RETURN</div>
+        <button id="return-btn" onclick="resetToCenter()">RETURN TO CENTER</button>
     </div>
 
     <div id="top-bar" style="display: none;">
@@ -306,36 +485,62 @@
         <div><span class="indicator"></span><span id="stars-count">STARS: 0</span></div>
     </div>
 
-    <div id="crosshair" style="display: none;">
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
-        <div class="circle"></div>
-        <div class="cross"></div>
-    </div>
 
-    <div id="font-panel" style="display: none;">
-        <h3>BLENDED FONTS</h3>
-        <img id="preview-image" src="" alt="Font Preview">
-        <div id="panel-about">PROJECT BY MAI DO WISE 25/26<br>IG: @ODDMAIDO<br>DEVELOPED @BAUHAUS.TYPOGRAPHY</div>
-        <div id="neighbors"></div>
-    </div>
+    <div id="ui-container" style="display: none;">
+        <div id="bottom-panel">
+            <!-- Corner nodes for bottom panel -->
+            <span class="corner-node tl"></span>
+            <span class="corner-node bl"></span>
 
-    <div id="bottom-panel" style="display: none;">
-        <div id="controls-section">
-            <div class="title">FONT GALAXY</div>
-            <div id="controls-table">
-                <div class="row"><span class="key">W A S D /////</span><span class="action">MOVE</span></div>
-                <div class="row"><span class="key">ARROWS /////</span><span class="action">ROTATE</span></div>
-                <div class="row"><span class="key">SCROLL /////</span><span class="action">SPEED</span></div>
-                <div class="row"><span class="key">CLICK /////</span><span class="action">SELECT</span></div>
+            <div id="title-section">
+                <div class="title">FONT SPACE</div>
+            </div>
+
+            <div id="controls-section">
+                <div id="controls-grid">
+                    <div class="control-item">
+                        <div class="control-key">W A S D /////</div>
+                        <div class="control-action">MOVE</div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-key">ARROWS /////</div>
+                        <div class="control-action">ROTATE</div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-key">SCROLL /////</div>
+                        <div class="control-action">SPEED</div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-key">CLICK //////</div>
+                        <div class="control-action">SELECT</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="context-section">
+                <h3>CONTEXT</h3>
+                <p>The project is an interactive typographic space where fonts are translated into a navigable galaxy. Each typeface exists as a point in space, defined by its visual characteristics. By moving through this environment, users explore typography not as static text, but as a system of relationships, distances, and transformations. Fonts can be selected, compared, and morphed into one another, revealing typography as a fluid, computational medium rather than a fixed form.</p>
+            </div>
+
+            <div id="about-section">
+                <h3>ABOUT</h3>
+                <p>PROJECT BY MAI DO<br>IG: @ODDMAIDO<br>DEVELOPED @BAUHAUS.TYPOGRAPHY</p>
             </div>
         </div>
 
-        <div id="context-section">
-            <h3>CONTEXT</h3>
-            <p>The project is an interactive typographic space where fonts are translated into a navigable galaxy. Each typeface exists as a point in space, defined by its visual characteristics. By moving through this environment, users explore typography not as static text, but as a system of relationships, distances, and transformations. Fonts can be selected, compared, and morphed into one another, revealing typography as a fluid, computational medium rather than a fixed form.</p>
+        <div id="font-panel">
+            <!-- Corner nodes for font panel -->
+            <span class="corner-node tl"></span>
+            <span class="corner-node tr"></span>
+            <span class="corner-node br"></span>
+
+            <div id="preview-section">
+                <h3>BLENDED FONTS</h3>
+                <img id="preview-image" src="" alt="Font Preview">
+            </div>
+            <div id="neighbors-section">
+                <div id="neighbors"></div>
+            </div>
         </div>
     </div>
 
@@ -380,24 +585,89 @@
         document.addEventListener('keydown', e => state.keys[e.code] = true);
         document.addEventListener('keyup', e => state.keys[e.code] = false);
 
-        document.addEventListener('mousemove', e => {
-            if (state.locked) {
-                state.rotation.y -= e.movementX * 0.002;
-                state.rotation.x -= e.movementY * 0.002;
-                state.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, state.rotation.x));
+        // Mouse state
+        state.modalOpen = false;
+
+        let mouseX = 0;
+        let mouseY = 0;
+        let prevMouseX = 0;
+        let prevMouseY = 0;
+        let isMouseDown = false;
+        let mouseDownX = 0;
+        let mouseDownY = 0;
+        let totalDragDistance = 0; // Track total drag distance
+
+        // Track if mouse is inside the window
+        let mouseInWindow = true;
+
+        // Track mouse position
+        document.addEventListener('mousemove', (e) => {
+            prevMouseX = mouseX;
+            prevMouseY = mouseY;
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            mouseInWindow = true;
+
+            // Update state for hover labels
+            state.lastMouseX = mouseX;
+            state.lastMouseY = mouseY;
+
+            // Track drag distance when mouse is down
+            if (isMouseDown) {
+                const dx = mouseX - prevMouseX;
+                const dy = mouseY - prevMouseY;
+                totalDragDistance += Math.abs(dx) + Math.abs(dy);
             }
         });
 
-        renderer.domElement.addEventListener('click', (e) => {
-            if (!state.locked) {
-                renderer.domElement.requestPointerLock();
-            } else {
-                selectFontAtCrosshair();
+        // Stop rotation when mouse leaves the window
+        document.addEventListener('mouseleave', () => {
+            mouseInWindow = false;
+        });
+
+        // Mouse down - enable dragging from anywhere
+        document.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                // Only block if clicking on modal
+                const target = e.target;
+                const isModalClick = target.closest('#specimen-modal') ||
+                                     target.closest('#modal-overlay');
+
+                if (!isModalClick) {
+                    isMouseDown = true;
+                    mouseDownX = e.clientX;
+                    mouseDownY = e.clientY;
+                    totalDragDistance = 0; // Reset drag distance
+                }
             }
         });
 
-        document.addEventListener('pointerlockchange', () => {
-            state.locked = document.pointerLockElement === renderer.domElement;
+        // Mouse up - just reset the flag
+        document.addEventListener('mouseup', (e) => {
+            if (e.button === 0) {
+                isMouseDown = false;
+            }
+        });
+
+        // Use click event for selection - on document to catch all clicks
+        document.addEventListener('click', (e) => {
+            // Skip if clicking on modal elements
+            const target = e.target;
+            const isModalClick = target.closest('#specimen-modal') ||
+                                 target.closest('#modal-overlay') ||
+                                 target.closest('#return-btn') ||
+                                 target.closest('#loading');
+
+            if (isModalClick) return;
+
+            // Force close modal if it's open
+            if (state.modalOpen) {
+                closeSpecimenModal();
+                return;
+            }
+
+            // Select font at click position
+            selectFontAtPosition(e.clientX, e.clientY);
         });
 
         // Modal handlers
@@ -410,57 +680,71 @@
         function closeSpecimenModal() {
             document.getElementById('specimen-modal').style.display = 'none';
             document.getElementById('modal-overlay').style.display = 'none';
-            renderer.domElement.requestPointerLock();
+            state.modalOpen = false;
+            state.hasMoved = false;
+            totalDragDistance = 0;
+        }
+
+        function resetToCenter() {
+            if (state.bounds) {
+                state.position.set(
+                    (state.bounds.min_x + state.bounds.max_x) / 2,
+                    (state.bounds.min_y + state.bounds.max_y) / 2,
+                    (state.bounds.min_z + state.bounds.max_z) / 2
+                );
+                state.velocity.set(0, 0, 0);
+                state.rotation.x = 0;
+                state.rotation.y = 0;
+                document.getElementById('void-warning').style.display = 'none';
+            }
         }
 
         async function showSpecimen(star) {
-            document.exitPointerLock();
+            state.modalOpen = true;
+
+            document.getElementById('specimen-name').textContent = star.name;
+            document.getElementById('specimen-modal').style.display = 'block';
+            document.getElementById('modal-overlay').style.display = 'block';
+
             try {
                 const res = await fetch(`/api/font_grid/${star.id}`);
-                if (!res.ok) throw new Error('Failed to load specimen');
-                const data = await res.json();
-
-                document.getElementById('specimen-name').textContent = star.name;
-                document.getElementById('specimen-image').src = `data:image/png;base64,${data.image}`;
-                document.getElementById('specimen-modal').style.display = 'block';
-                document.getElementById('modal-overlay').style.display = 'block';
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.image) {
+                        document.getElementById('specimen-image').src = `data:image/png;base64,${data.image}`;
+                        return;
+                    }
+                }
+                document.getElementById('specimen-image').src = '';
+                document.getElementById('specimen-image').alt = 'Font specimen not available';
             } catch (e) {
-                console.error('Error loading specimen:', e);
+                document.getElementById('specimen-image').src = '';
+                document.getElementById('specimen-image').alt = 'Font specimen not available';
             }
         }
 
-        function selectFontAtCrosshair() {
-            if (!state.displayStars) return;
-
-            let starsToCheck = [...state.displayStars];
-            if (state.activeNeighbors) {
-                for (const n of state.activeNeighbors) {
-                    starsToCheck.push({ id: n.id, name: n.name, x: n.x, y: n.y, z: n.z });
-                }
-            }
-
-            const screenCenterX = window.innerWidth / 2;
-            const screenCenterY = window.innerHeight / 2;
+        function selectFontAtPosition(clickX, clickY) {
+            if (!state.stars || state.stars.length === 0) return;
 
             let bestStar = null;
-            let bestDist = 100;
+            let bestScreenDist = Infinity;
 
-            for (const star of starsToCheck) {
+            for (const star of state.stars) {
                 const pos = new THREE.Vector3(star.x * SCALE, star.y * SCALE, star.z * SCALE);
                 pos.project(camera);
 
-                if (pos.z >= 1) continue;
+                if (pos.z > 1) continue;
 
                 const screenX = (pos.x * 0.5 + 0.5) * window.innerWidth;
                 const screenY = (-pos.y * 0.5 + 0.5) * window.innerHeight;
 
                 const screenDist = Math.sqrt(
-                    (screenX - screenCenterX) ** 2 +
-                    (screenY - screenCenterY) ** 2
+                    (screenX - clickX) ** 2 +
+                    (screenY - clickY) ** 2
                 );
 
-                if (screenDist < bestDist) {
-                    bestDist = screenDist;
+                if (screenDist < bestScreenDist) {
+                    bestScreenDist = screenDist;
                     bestStar = star;
                 }
             }
@@ -587,6 +871,7 @@
                     text-shadow: 0 0 4px #000, 0 0 2px #000;
                     white-space: nowrap;
                     transform: translate(-50%, -100%);
+                    pointer-events: none;
                 `;
                 state.labelContainer.appendChild(label);
                 state.labels.push(label);
@@ -604,27 +889,24 @@
                 white-space: nowrap;
                 transform: translate(-50%, -100%);
                 display: none;
+                pointer-events: none;
             `;
             state.labelContainer.appendChild(state.proximityLabel);
         }
 
         function updateProximityLabel() {
-            if (!state.displayStars || !state.proximityLabel) return;
-
-            let starsToCheck = [...state.displayStars];
-            if (state.activeNeighbors) {
-                for (const n of state.activeNeighbors) {
-                    starsToCheck.push({ id: n.id, name: n.name, x: n.x, y: n.y, z: n.z });
-                }
-            }
+            // Check ALL stars for hover labels
+            if (!state.stars || state.stars.length === 0 || !state.proximityLabel) return;
 
             let bestStar = null;
-            let bestScore = Infinity;
+            let bestDist = 100; // Hover detection radius in pixels (increased)
 
-            const screenCenterX = window.innerWidth / 2;
-            const screenCenterY = window.innerHeight / 2;
+            // Use mouse position instead of screen center
+            const mouseX = state.lastMouseX || window.innerWidth / 2;
+            const mouseY = state.lastMouseY || window.innerHeight / 2;
 
-            for (const star of starsToCheck) {
+            // Check all stars in the full dataset
+            for (const star of state.stars) {
                 const pos = new THREE.Vector3(star.x * SCALE, star.y * SCALE, star.z * SCALE);
                 pos.project(camera);
 
@@ -634,21 +916,12 @@
                 const screenY = (-pos.y * 0.5 + 0.5) * window.innerHeight;
 
                 const screenDist = Math.sqrt(
-                    (screenX - screenCenterX) ** 2 +
-                    (screenY - screenCenterY) ** 2
+                    (screenX - mouseX) ** 2 +
+                    (screenY - mouseY) ** 2
                 );
 
-                if (screenDist > 150) continue;
-
-                const dx = star.x * SCALE - state.position.x;
-                const dy = star.y * SCALE - state.position.y;
-                const dz = star.z * SCALE - state.position.z;
-                const dist3D = Math.sqrt(dx*dx + dy*dy + dz*dz);
-
-                const score = screenDist * 0.1 + dist3D;
-
-                if (score < bestScore) {
-                    bestScore = score;
+                if (screenDist < bestDist) {
+                    bestDist = screenDist;
                     bestStar = { star, screenX, screenY };
                 }
             }
@@ -698,6 +971,7 @@
             right.applyEuler(new THREE.Euler(0, state.rotation.y, 0, 'YXZ'));
 
             const speed = state.speed * dt * 0.002;
+            // WASD + Arrow keys for movement
             if (state.keys['KeyW'] || state.keys['ArrowUp']) state.velocity.addScaledVector(forward, speed);
             if (state.keys['KeyS'] || state.keys['ArrowDown']) state.velocity.addScaledVector(forward, -speed);
             if (state.keys['KeyA'] || state.keys['ArrowLeft']) state.velocity.addScaledVector(right, -speed);
@@ -706,11 +980,45 @@
             state.position.add(state.velocity);
             state.velocity.multiplyScalar(state.friction);
 
+            // Keep position within bounds (no padding - strict bounds)
             if (state.bounds) {
-                const pad = 1;
-                state.position.x = Math.max(state.bounds.min_x - pad, Math.min(state.bounds.max_x + pad, state.position.x));
-                state.position.y = Math.max(state.bounds.min_y - pad, Math.min(state.bounds.max_y + pad, state.position.y));
-                state.position.z = Math.max(state.bounds.min_z - pad, Math.min(state.bounds.max_z + pad, state.position.z));
+                state.position.x = Math.max(state.bounds.min_x, Math.min(state.bounds.max_x, state.position.x));
+                state.position.y = Math.max(state.bounds.min_y, Math.min(state.bounds.max_y, state.position.y));
+                state.position.z = Math.max(state.bounds.min_z, Math.min(state.bounds.max_z, state.position.z));
+            }
+
+            // Press R to reset to center
+            if (state.keys['KeyR']) {
+                resetToCenter();
+                state.keys['KeyR'] = false; // Prevent repeated reset
+            }
+
+            // Rotate based on mouse position relative to center (only if mouse is in window)
+            if (!state.modalOpen && mouseInWindow) {
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+
+                // Calculate offset from center (-1 to 1)
+                const offsetX = (mouseX - centerX) / centerX;
+                const offsetY = (mouseY - centerY) / centerY;
+
+                // Dead zone in the middle (20% from center = no rotation)
+                const deadZone = 0.2;
+
+                // Apply rotation based on offset (with dead zone)
+                if (Math.abs(offsetX) > deadZone) {
+                    const strength = (Math.abs(offsetX) - deadZone) / (1 - deadZone);
+                    const rotSpeed = strength * 0.0012 * dt * -Math.sign(offsetX);
+                    state.rotation.y += rotSpeed;
+                }
+                if (Math.abs(offsetY) > deadZone) {
+                    const strength = (Math.abs(offsetY) - deadZone) / (1 - deadZone);
+                    const rotSpeed = strength * 0.0012 * dt * Math.sign(offsetY);
+                    state.rotation.x -= rotSpeed;
+                }
+
+                // Clamp pitch to prevent gimbal lock
+                state.rotation.x = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, state.rotation.x));
             }
 
             camera.position.copy(state.position);
@@ -745,6 +1053,18 @@
 
                 if (data.image) {
                     document.getElementById('preview-image').src = `data:image/png;base64,${data.image}`;
+                }
+
+                // Check if in the void (nearest star is far away)
+                const voidWarning = document.getElementById('void-warning');
+                if (data.neighbors && data.neighbors.length > 0) {
+                    const nearestDist = data.neighbors[0].distance;
+                    // Show warning if nearest star is more than 1.5 units away
+                    if (nearestDist > 1.5) {
+                        voidWarning.style.display = 'block';
+                    } else {
+                        voidWarning.style.display = 'none';
+                    }
                 }
 
                 if (data.neighbors) {
@@ -814,9 +1134,7 @@
                 setTimeout(() => {
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('top-bar').style.display = 'flex';
-                    document.getElementById('crosshair').style.display = 'block';
-                    document.getElementById('font-panel').style.display = 'block';
-                    document.getElementById('bottom-panel').style.display = 'grid';
+                    document.getElementById('ui-container').style.display = 'grid';
 
                     updatePreview();
                     requestAnimationFrame(animate);
