@@ -28,8 +28,35 @@
             overflow: hidden;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            min-width: 1000px;
         }
         #container { width: 100vw; height: 100vh; }
+
+        /* Crosshair for controller aiming */
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: url('/static/pointer.png') center/contain no-repeat;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        /* Target label sits below the circle */
+        #crosshair-target {
+            position: fixed;
+            left: 50%;
+            top: calc(50% + 50px);
+            transform: translateX(-50%);
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            pointer-events: none;
+            color: white;
+            z-index: 1000;
+        }
 
         /* Top Bar */
         #top-bar {
@@ -39,9 +66,11 @@
             right: 0;
             display: flex;
             justify-content: space-between;
+            align-items: flex-start;
             padding: 20px 30px;
             font-size: 11px;
             pointer-events: none;
+            z-index: 10;
         }
         #top-bar > div {
             display: flex;
@@ -64,11 +93,11 @@
             --hud-line: rgba(255, 255, 255, 0.35);
             --hud-text: rgba(255, 255, 255, 1);
             --hud-text-muted: rgba(255, 255, 255, 1);
-            --hud-node: rgba(255, 255, 255, 0.95);
+            --hud-node: #fff;
             --pad: 16px;
             --pad-sm: 10px;
             --node-size: 7px;
-            --sidebar-w: clamp(280px, 22vw, 340px);
+            --sidebar-w: clamp(240px, 18vw, 300px);
         }
 
         /* Corner Node Squares - FILLED solid white */
@@ -88,12 +117,14 @@
         /* Main UI Container - CSS Grid for perfect alignment */
         #ui-container {
             position: absolute;
-            bottom: 30px;
-            left: 30px;
-            right: 30px;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
             display: grid;
             grid-template-columns: 1fr var(--sidebar-w);
             align-items: end;
+            z-index: 10;
+            min-width: 900px;
         }
 
         /* Bottom Panel - uses CSS Grid for column widths */
@@ -101,14 +132,18 @@
             border: var(--hud-border) solid var(--hud-line);
             border-right: none; /* Sidebar draws the shared border */
             display: grid;
-            grid-template-columns: 140px 320px minmax(280px, 1fr) 230px;
+            grid-template-columns: 140px minmax(220px, 280px) minmax(300px, 1fr) minmax(150px, 200px);
             position: relative;
+            background: rgba(0, 0, 0, 0.5);
         }
         #bottom-panel h3 {
             font-family: 'Bianzhidai', monospace;
             font-size: 11px;
             font-weight: normal;
-            margin-bottom: 8px;
+            margin: 0 0 8px 0;
+            height: 22px;
+            display: flex;
+            align-items: center;
             letter-spacing: 0.1em;
             color: var(--hud-text-muted);
         }
@@ -129,8 +164,9 @@
             position: absolute;
             width: var(--node-size);
             height: var(--node-size);
-            background: var(--hud-node);
+            background: #fff;
             right: 0;
+            z-index: 10;
         }
         #title-section::before { top: 0; transform: translate(50%, -50%); }
         #title-section::after { bottom: 0; transform: translate(50%, 50%); }
@@ -140,6 +176,10 @@
             letter-spacing: 0.12em;
             color: #fff;
             white-space: nowrap;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            margin: 0;
         }
 
         /* Controls Section */
@@ -155,8 +195,9 @@
             position: absolute;
             width: var(--node-size);
             height: var(--node-size);
-            background: var(--hud-node);
+            background: #fff;
             right: 0;
+            z-index: 10;
         }
         #controls-section::before { top: 0; transform: translate(50%, -50%); }
         #controls-section::after { bottom: 0; transform: translate(50%, 50%); }
@@ -195,27 +236,59 @@
         }
         /* Grid cells - padding only, no borders */
         #controls-grid .control-item {
-            padding: 8px 12px;
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        /* Left column items - less left padding */
+        #controls-grid .control-item:nth-child(1),
+        #controls-grid .control-item:nth-child(3) {
+            padding-left: 4px;
+        }
+        /* Top row items - less top padding */
+        #controls-grid .control-item:nth-child(1),
+        #controls-grid .control-item:nth-child(2) {
+            padding-top: 4px;
+        }
+        /* Right column items - more spacing from middle line */
+        #controls-grid .control-item:nth-child(2),
+        #controls-grid .control-item:nth-child(4) {
+            padding-left: 40px;
         }
 
         .control-key {
             font-family: 'Bianzhidai Base', monospace;
             color: #fff;
-            margin-bottom: 4px;
-            font-size: 10px;
+            display: flex;
+            align-items: center;
+            height: 22px;
+            font-size: 11px;
             letter-spacing: 0.08em;
+            white-space: nowrap;
+            line-height: 1;
         }
         .control-action {
             font-family: 'IBM Plex Mono', monospace;
             color: #fff;
-            font-size: 10px;
+            font-size: 9px;
+            white-space: nowrap;
+            line-height: 1;
         }
 
         /* Context Section - widest column */
         #context-section {
-            padding: var(--pad);
+            padding-top: var(--pad);
+            padding-right: var(--pad);
+            padding-bottom: var(--pad);
+            padding-left: var(--pad);
             border-right: var(--hud-border) solid var(--hud-line);
             position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
         /* Corner nodes at context section right edge - FILLED */
         #context-section::before,
@@ -224,8 +297,9 @@
             position: absolute;
             width: var(--node-size);
             height: var(--node-size);
-            background: var(--hud-node);
+            background: #fff;
             right: 0;
+            z-index: 10;
         }
         #context-section::before { top: 0; transform: translate(50%, -50%); }
         #context-section::after { bottom: 0; transform: translate(50%, 50%); }
@@ -239,8 +313,14 @@
 
         /* About Section */
         #about-section {
-            padding: var(--pad);
+            padding-top: var(--pad-sm);
+            padding-right: var(--pad);
+            padding-bottom: var(--pad);
+            padding-left: var(--pad);
             position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
         /* Corner nodes at shared edge with sidebar */
         #about-section::before,
@@ -249,8 +329,9 @@
             position: absolute;
             width: var(--node-size);
             height: var(--node-size);
-            background: var(--hud-node);
+            background: #fff;
             right: 0;
+            z-index: 10;
         }
         #about-section::before { top: 0; transform: translate(50%, -50%); }
         #about-section::after { bottom: 0; transform: translate(50%, 50%); }
@@ -259,6 +340,7 @@
             font-size: 9px;
             line-height: 1.65;
             color: var(--hud-text-muted);
+            white-space: nowrap;
         }
 
         /* Right Panel - Blended Fonts (fixed width, stable layout) */
@@ -268,6 +350,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            background: rgba(0, 0, 0, 0.5);
         }
         #font-panel h3 {
             font-family: 'Bianzhidai', monospace;
@@ -462,10 +545,64 @@
             background: rgba(255, 255, 255, 0.1);
             border-color: #fff;
         }
+
+        /* 2D Map Toggle */
+        #view-toggle {
+            font-family: 'Bianzhidai Base', monospace;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: #fff;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            pointer-events: auto;
+        }
+        #view-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #fff;
+        }
+
+        /* 2D Map Canvas */
+        #map-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 1;
+        }
+
+        /* Map hover label */
+        #map-label {
+            position: absolute;
+            color: #fff;
+            font-size: 10px;
+            font-family: 'IBM Plex Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            line-height: 1.5;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 6px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            white-space: nowrap;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            pointer-events: none;
+            z-index: 5;
+        }
     </style>
 </head>
 <body>
     <div id="container"></div>
+    <div id="crosshair" style="display: none;"></div>
+    <div id="crosshair-target" style="display: none;"></div>
+    <canvas id="map-canvas"></canvas>
+    <div id="map-label" style="display: none;"></div>
 
     <div id="loading">
         <h2>FONT SPACE</h2>
@@ -475,15 +612,22 @@
 
     <div id="void-warning">
         <div class="message">YOU ARE IN THE VOID</div>
-        <div class="hint">PRESS <span class="key">R</span> OR CLICK BELOW TO RETURN</div>
+        <div class="hint">PRESS <span class="key">R</span> / <span class="key">R1</span> OR CLICK BELOW TO RETURN</div>
         <button id="return-btn" onclick="resetToCenter()">RETURN TO CENTER</button>
     </div>
 
     <div id="top-bar" style="display: none;">
         <div><span class="indicator"></span><span id="position">POSITION (0, 0, 0)</span></div>
-        <div><span class="indicator"></span><span id="speed-display">SPEED: 50%</span></div>
-        <div><span class="indicator"></span><span id="stars-count">STARS: 0</span></div>
+        <div></div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 10px;"><span class="indicator"></span><span id="stars-count">STARS: 0</span></div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="view-hint" style="font-size: 9px; opacity: 0.6; letter-spacing: 0.05em;">X</span>
+                <button id="view-toggle">2D</button>
+            </div>
+        </div>
     </div>
+    <div id="speed-display" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); font-size: 11px; z-index: 10;"><span class="indicator" style="display: inline-block; width: 6px; height: 6px; background: rgba(255,255,255,0.8); margin-right: 10px;"></span><span id="speed-text">SPEED: 100%</span></div>
 
 
     <div id="ui-container" style="display: none;">
@@ -499,32 +643,32 @@
             <div id="controls-section">
                 <div id="controls-grid">
                     <div class="control-item">
-                        <div class="control-key">W A S D /////</div>
-                        <div class="control-action">MOVE</div>
+                        <div class="control-key" id="ctrl-1-key">LEFT STICK</div>
+                        <div class="control-action" id="ctrl-1-action">MOVE</div>
                     </div>
                     <div class="control-item">
-                        <div class="control-key">ARROWS /////</div>
-                        <div class="control-action">ROTATE</div>
+                        <div class="control-key" id="ctrl-2-key">RIGHT STICK</div>
+                        <div class="control-action" id="ctrl-2-action">ROTATE</div>
                     </div>
                     <div class="control-item">
-                        <div class="control-key">SCROLL /////</div>
-                        <div class="control-action">SPEED</div>
+                        <div class="control-key" id="ctrl-3-key">L2 / R2</div>
+                        <div class="control-action" id="ctrl-3-action">SPEED</div>
                     </div>
                     <div class="control-item">
-                        <div class="control-key">CLICK //////</div>
-                        <div class="control-action">SELECT</div>
+                        <div class="control-key" id="ctrl-4-key">A / B BUTTON</div>
+                        <div class="control-action" id="ctrl-4-action">SELECT / DESELECT</div>
                     </div>
                 </div>
             </div>
 
             <div id="context-section">
                 <h3>CONTEXT</h3>
-                <p>The project is an interactive typographic space where fonts are translated into a navigable galaxy. Each typeface exists as a point in space, defined by its visual characteristics. By moving through this environment, users explore typography not as static text, but as a system of relationships, distances, and transformations. Fonts can be selected, compared, and morphed into one another, revealing typography as a fluid, computational medium rather than a fixed form.</p>
+                <p>FONT SPACE is a typographic navigation system built from a learned latent typography space. An autoencoder is trained on glyph images to capture the visual "DNA" of each typeface, letting the model learn relationships on its own and place similar fonts near each other. The space is visualized as a 3D/2D galaxy to explore: moving through clusters reveals related styles, selecting a point previews specimens, and blending nearby fonts generates smooth hybrids in real time. A tool to discover type not by name, but by form and relationships.</p>
             </div>
 
             <div id="about-section">
                 <h3>ABOUT</h3>
-                <p>PROJECT BY MAI DO<br>IG: @ODDMAIDO<br>DEVELOPED @BAUHAUS.TYPOGRAPHY</p>
+                <p>PROJECT BY MAI DO<br>IG: @ODDMAIDO<br>DEVELOPED<br>@BAUHAUS.TYPOGRAPHY</p>
             </div>
         </div>
 
@@ -532,6 +676,7 @@
             <!-- Corner nodes for font panel -->
             <span class="corner-node tl"></span>
             <span class="corner-node tr"></span>
+            <span class="corner-node bl"></span>
             <span class="corner-node br"></span>
 
             <div id="preview-section">
@@ -569,8 +714,8 @@
         const state = {
             position: new THREE.Vector3(0, 0, 0),
             velocity: new THREE.Vector3(0, 0, 0),
-            rotation: { x: 0, y: 0 },
-            speed: 0.05,
+            rotation: new THREE.Quaternion(),
+            speed: 0.1,
             friction: 0.85,
             keys: {},
             stars: [],
@@ -579,10 +724,563 @@
             locked: false,
             lastPreviewPos: null,
             previewCooldown: 0,
+            viewMode: '3d',
+            map: { offsetX: 0, offsetY: 0, zoom: 1, dragging: false, dragStartX: 0, dragStartY: 0 },
+            cursor2D: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+            gamepadSelectPressed: false,
+            gamepadTogglePressed: false,
+            gamepadCancelPressed: false
         };
 
+        // 2D Map
+        const mapCanvas = document.getElementById('map-canvas');
+        const mapCtx = mapCanvas.getContext('2d');
+        const mapLabel = document.getElementById('map-label');
+        const viewToggle = document.getElementById('view-toggle');
+
+        function resizeMap() {
+            mapCanvas.width = window.innerWidth;
+            mapCanvas.height = window.innerHeight;
+            if (state.viewMode === '2d') requestMapRender();
+        }
+
+        function requestMapRender() {
+            state.map.needsRender = true;
+        }
+
+        viewToggle.addEventListener('click', () => {
+            state.viewMode = state.viewMode === '3d' ? '2d' : '3d';
+                if (state.viewMode === '2d') {
+                viewToggle.textContent = '3D';
+                mapCanvas.style.display = 'block';
+                container.style.display = 'none';
+                    // Keep the overlay crosshair visible and static for controller aiming
+                    document.getElementById('crosshair').style.display = 'block';
+                    document.getElementById('crosshair-target').style.display = 'none';
+                if (state.labelContainer) state.labelContainer.style.display = 'none';
+                state.map.offsetX = 0;
+                state.map.offsetY = 0;
+                state.map.zoom = 1;
+                state.map.bounds = null;
+                state.map.clusters = null;
+                // Reset cursor to center for gamepad
+                state.cursor2D.x = window.innerWidth / 2;
+                state.cursor2D.y = window.innerHeight / 2;
+                const crosshair = document.getElementById('crosshair');
+                crosshair.style.left = '50%';
+                crosshair.style.top = '50%';
+                crosshair.style.transform = 'translate(-50%, -50%)';
+                resizeMap();
+                renderMap(); // Render immediately so hover works right away
+                // Update controls for 2D
+                document.getElementById('ctrl-1-key').textContent = 'LEFT STICK';
+                document.getElementById('ctrl-1-action').textContent = 'MOVE';
+                document.getElementById('ctrl-2-key').textContent = 'L2 / R2';
+                document.getElementById('ctrl-2-action').textContent = 'ZOOM';
+                document.getElementById('ctrl-3-key').textContent = 'RIGHT STICK';
+                document.getElementById('ctrl-3-action').textContent = 'CURSOR';
+                document.getElementById('ctrl-4-key').textContent = 'A / B BUTTON';
+                document.getElementById('ctrl-4-action').textContent = 'SELECT / DESELECT';
+            } else {
+                viewToggle.textContent = '2D';
+                mapCanvas.style.display = 'none';
+                container.style.display = 'block';
+                // Reset crosshair to center for 3D mode
+                const crosshair = document.getElementById('crosshair');
+                crosshair.style.display = 'block';
+                crosshair.style.left = '50%';
+                crosshair.style.top = '50%';
+                crosshair.style.transform = 'translate(-50%, -50%)';
+                document.getElementById('crosshair-target').style.display = 'block';
+                if (state.labelContainer) state.labelContainer.style.display = 'block';
+                mapLabel.style.display = 'none';
+                // Reset 3D position to center
+                if (state.bounds) {
+                    state.position.set(
+                        (state.bounds.min_x + state.bounds.max_x) / 2,
+                        (state.bounds.min_y + state.bounds.max_y) / 2,
+                        (state.bounds.min_z + state.bounds.max_z) / 2
+                    );
+                    state.velocity.set(0, 0, 0);
+                    state.rotation.identity();
+                }
+                document.getElementById('void-warning').style.display = 'none';
+                // Update controls for 3D
+                document.getElementById('ctrl-1-key').textContent = 'LEFT STICK';
+                document.getElementById('ctrl-1-action').textContent = 'MOVE';
+                document.getElementById('ctrl-2-key').textContent = 'RIGHT STICK';
+                document.getElementById('ctrl-2-action').textContent = 'ROTATE';
+                document.getElementById('ctrl-3-key').textContent = 'L2 / R2';
+                document.getElementById('ctrl-3-action').textContent = 'SPEED';
+                document.getElementById('ctrl-4-key').textContent = 'A / B BUTTON';
+                document.getElementById('ctrl-4-action').textContent = 'SELECT / DESELECT';
+            }
+        });
+
+        // K-means clustering for map zones
+        function kMeansClusters(stars, k = 6) {
+            if (!stars || stars.length < k) return [];
+
+            // Find bounds
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            for (const s of stars) {
+                minX = Math.min(minX, s.x); maxX = Math.max(maxX, s.x);
+                minY = Math.min(minY, s.y); maxY = Math.max(maxY, s.y);
+            }
+
+            // Initialize centroids in a grid pattern
+            const centroids = [];
+            const cols = Math.ceil(Math.sqrt(k));
+            const rows = Math.ceil(k / cols);
+            for (let i = 0; i < k; i++) {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                centroids.push({
+                    x: minX + (maxX - minX) * (col + 0.5) / cols,
+                    y: minY + (maxY - minY) * (row + 0.5) / rows
+                });
+            }
+
+            // Run k-means
+            for (let iter = 0; iter < 20; iter++) {
+                const clusters = Array.from({ length: k }, () => []);
+                for (const s of stars) {
+                    let bestDist = Infinity, bestIdx = 0;
+                    for (let i = 0; i < k; i++) {
+                        const d = Math.hypot(s.x - centroids[i].x, s.y - centroids[i].y);
+                        if (d < bestDist) { bestDist = d; bestIdx = i; }
+                    }
+                    clusters[bestIdx].push(s);
+                }
+                for (let i = 0; i < k; i++) {
+                    if (clusters[i].length > 0) {
+                        centroids[i].x = clusters[i].reduce((sum, s) => sum + s.x, 0) / clusters[i].length;
+                        centroids[i].y = clusters[i].reduce((sum, s) => sum + s.y, 0) / clusters[i].length;
+                    }
+                }
+            }
+
+            // Final assignment
+            const clusters = Array.from({ length: k }, () => []);
+            for (const s of stars) {
+                let bestDist = Infinity, bestIdx = 0;
+                for (let i = 0; i < k; i++) {
+                    const d = Math.hypot(s.x - centroids[i].x, s.y - centroids[i].y);
+                    if (d < bestDist) { bestDist = d; bestIdx = i; }
+                }
+                clusters[bestIdx].push(s);
+            }
+
+            // Curated fonts for each zone
+            const zoneFonts = [640, 76155, 19, 1212, 471, 1658];
+
+            // Build cluster data
+            const clusterData = clusters.map((members, i) => {
+                if (members.length === 0) return null;
+
+                // Find representative font (closest to centroid)
+                let rep = members[0], minDist = Infinity;
+                for (const m of members) {
+                    const d = Math.hypot(m.x - centroids[i].x, m.y - centroids[i].y);
+                    if (d < minDist) { minDist = d; rep = m; }
+                }
+
+                return {
+                    x: centroids[i].x,
+                    y: centroids[i].y,
+                    count: members.length,
+                    members,
+                    label: rep.name,
+                    exampleId: zoneFonts[i % zoneFonts.length],
+                    glyphImage: null
+                };
+            }).filter(c => c !== null && c.count >= 3);
+
+            // Load glyph images
+            for (const cluster of clusterData) {
+                fetch(`/api/font_grid/${cluster.exampleId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.image) {
+                            const img = new Image();
+                            img.onload = () => {
+                                cluster.glyphImage = img;
+                                state.map.needsRender = true;
+                            };
+                            img.src = 'data:image/png;base64,' + data.image;
+                        }
+                    })
+                    .catch(() => {});
+            }
+
+            return clusterData;
+        }
+
+        // Animation state for map
+        state.map.mouseX = 0;
+        state.map.mouseY = 0;
+        state.map.needsRender = false;
+
+        function renderMap() {
+            if (!state.stars || state.stars.length === 0) return;
+            const w = mapCanvas.width, h = mapCanvas.height, ctx = mapCtx;
+
+            // Spread factors (used for both stars and zones)
+            const expandFactorX = 18000;
+            const expandFactorY = 8000;
+            const jitter = 5000; // Spread planets far from each other
+
+            // Compute spread coordinates once
+            if (!state.map.spreadComputed) {
+                const seededRandom = (seed) => {
+                    const x = Math.sin(seed * 9999) * 10000;
+                    return x - Math.floor(x);
+                };
+
+                // Find original bounds
+                let oMinX = Infinity, oMaxX = -Infinity, oMinY = Infinity, oMaxY = -Infinity;
+                for (const s of state.stars) {
+                    oMinX = Math.min(oMinX, s.x); oMaxX = Math.max(oMaxX, s.x);
+                    oMinY = Math.min(oMinY, s.y); oMaxY = Math.max(oMaxY, s.y);
+                }
+                const oCx = (oMinX + oMaxX) / 2;
+                const oCy = (oMinY + oMaxY) / 2;
+
+                // Store original center for zone calculations
+                state.map.originalCenter = { x: oCx, y: oCy };
+                state.map.expandFactorX = expandFactorX;
+                state.map.expandFactorY = expandFactorY;
+
+                for (let i = 0; i < state.stars.length; i++) {
+                    const s = state.stars[i];
+                    const dx = s.x - oCx;
+                    const dy = s.y - oCy;
+                    s.spreadX = oCx + dx * expandFactorX + (seededRandom(i * 2) - 0.5) * jitter;
+                    s.spreadY = oCy + dy * expandFactorY + (seededRandom(i * 2 + 1) - 0.5) * jitter;
+                }
+                state.map.spreadComputed = true;
+            }
+
+            // Find bounds using spread coordinates (cache this)
+            if (!state.map.bounds) {
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+                for (const s of state.stars) {
+                    minX = Math.min(minX, s.spreadX); maxX = Math.max(maxX, s.spreadX);
+                    minY = Math.min(minY, s.spreadY); maxY = Math.max(maxY, s.spreadY);
+                }
+                state.map.bounds = { minX, maxX, minY, maxY };
+            }
+            const { minX, maxX, minY, maxY } = state.map.bounds;
+            const dataW = maxX - minX || 1, dataH = maxY - minY || 1;
+            const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+            const scale = Math.min((w - 20) / dataW, (h - 20) / dataH) * state.map.zoom;
+            const ox = w / 2 + state.map.offsetX, oy = h / 2 + state.map.offsetY;
+
+            // Clear
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            // Create clusters with convex hulls once
+            if (!state.map.clusters) {
+                const clusters = kMeansClusters(state.stars, 6);
+                for (const cluster of clusters) {
+                    if (cluster && cluster.members.length >= 3) {
+                        cluster.hull = convexHull(cluster.members);
+                    }
+                }
+                state.map.clusters = clusters;
+            }
+
+            // Draw cluster zones with convex hulls
+            const clusters = state.map.clusters;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([6, 6]);
+
+            for (const cluster of clusters) {
+                if (!cluster || !cluster.hull || cluster.hull.length < 3) continue;
+
+                // Draw convex hull using spread coordinates
+                ctx.beginPath();
+                const p0 = cluster.hull[0];
+                ctx.moveTo(ox + (p0.spreadX - cx) * scale, oy - (p0.spreadY - cy) * scale);
+                for (let j = 1; j < cluster.hull.length; j++) {
+                    const p = cluster.hull[j];
+                    ctx.lineTo(ox + (p.spreadX - cx) * scale, oy - (p.spreadY - cy) * scale);
+                }
+                ctx.closePath();
+                ctx.stroke();
+
+            }
+            ctx.setLineDash([]);
+
+            // Draw all planets - gradually get bigger as you zoom in
+            const dotRadius = Math.min(1.5 + Math.log2(Math.max(1, state.map.zoom)) * 1.2, 20);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            state.map.visibleStars = [];
+
+            for (const s of state.stars) {
+                const sx = ox + (s.spreadX - cx) * scale;
+                const sy = oy - (s.spreadY - cy) * scale;
+
+                s._sx = sx;
+                s._sy = sy;
+                state.map.visibleStars.push(s);
+
+                if (sx < -5 || sx > w + 5 || sy < -5 || sy > h + 5) continue;
+
+                ctx.beginPath();
+                ctx.arc(sx, sy, dotRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Reset shadow
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+
+            // Draw lines to neighbors from current position
+            if (state.activeNeighbors) {
+                const px = state.position.x / SCALE, py = state.position.y / SCALE;
+                const mx = ox + (px - cx) * scale;
+                const my = oy - (py - cy) * scale;
+
+                // Lines to neighbors - use spread coordinates if available
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.lineWidth = 1;
+                for (const n of state.activeNeighbors) {
+                    const nsx = n.spreadX !== undefined ? n.spreadX : n.x;
+                    const nsy = n.spreadY !== undefined ? n.spreadY : n.y;
+                    const sx = ox + (nsx - cx) * scale;
+                    const sy = oy - (nsy - cy) * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(mx, my);
+                    ctx.lineTo(sx, sy);
+                    ctx.stroke();
+                }
+
+                // Neighbor nodes (no labels - only show on hover)
+                for (const n of state.activeNeighbors) {
+                    const nsx = n.spreadX !== undefined ? n.spreadX : n.x;
+                    const nsy = n.spreadY !== undefined ? n.spreadY : n.y;
+                    const sx = ox + (nsx - cx) * scale;
+                    const sy = oy - (nsy - cy) * scale;
+
+                    // Ring
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, dotRadius + 4, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Dot
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, dotRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Store for hit testing
+            state.map.transform = { scale, ox, oy, cx, cy, minX, minY, dataW, dataH };
+
+            // Check if in void (2D mode) - check distance from screen center to nearest star
+            const voidWarning = document.getElementById('void-warning');
+            const screenCenterX = w / 2;
+            const screenCenterY = h / 2;
+            let minDistToStar = Infinity;
+            for (const s of state.map.visibleStars) {
+                const d = Math.sqrt((s._sx - screenCenterX) ** 2 + (s._sy - screenCenterY) ** 2);
+                if (d < minDistToStar) minDistToStar = d;
+            }
+            // Show void warning if nearest star is more than 300 pixels away from center
+            if (minDistToStar > 300) {
+                voidWarning.style.display = 'block';
+            } else {
+                voidWarning.style.display = 'none';
+            }
+        }
+
+        // Only render map when needed (not every frame)
+        function mapLoop() {
+            if (state.viewMode === '2d' && state.map.needsRender) {
+                renderMap();
+                state.map.needsRender = false;
+            }
+            requestAnimationFrame(mapLoop);
+        }
+        requestAnimationFrame(mapLoop);
+
+        // Convex hull algorithm (Graham scan)
+        function convexHull(points) {
+            if (points.length < 3) return points;
+
+            // Find lowest point
+            let lowest = 0;
+            for (let i = 1; i < points.length; i++) {
+                if (points[i].y > points[lowest].y ||
+                    (points[i].y === points[lowest].y && points[i].x < points[lowest].x)) {
+                    lowest = i;
+                }
+            }
+
+            const pivot = points[lowest];
+            const sorted = points.slice().sort((a, b) => {
+                const angleA = Math.atan2(a.y - pivot.y, a.x - pivot.x);
+                const angleB = Math.atan2(b.y - pivot.y, b.x - pivot.x);
+                return angleA - angleB;
+            });
+
+            const hull = [];
+            for (const p of sorted) {
+                while (hull.length >= 2) {
+                    const a = hull[hull.length - 2];
+                    const b = hull[hull.length - 1];
+                    const cross = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+                    if (cross <= 0) hull.pop();
+                    else break;
+                }
+                hull.push(p);
+            }
+            return hull;
+        }
+
+        function getClosestStar(clientX, clientY) {
+            // Use cached visible stars with pre-calculated screen positions
+            if (!state.map.visibleStars || state.map.visibleStars.length === 0) return null;
+
+            // Canvas is full-screen, so client coordinates = canvas coordinates
+            const x = clientX;
+            const y = clientY;
+
+            // Find closest from cached visible stars
+            let best = null, bestD = Infinity;
+            for (let i = 0; i < state.map.visibleStars.length; i++) {
+                const s = state.map.visibleStars[i];
+                const d = (s._sx - x) * (s._sx - x) + (s._sy - y) * (s._sy - y);
+                if (d < bestD) { bestD = d; best = s; }
+            }
+            return { star: best, dist: Math.sqrt(bestD) };
+        }
+
+        function getStarAt(clientX, clientY) {
+            const result = getClosestStar(clientX, clientY);
+            if (!result || !result.star) return null;
+            // Always return closest star for reliable clicking
+            return result.star;
+        }
+
+        function getStarForHover(clientX, clientY) {
+            const result = getClosestStar(clientX, clientY);
+            if (!result || !result.star) return null;
+            // Always return closest star for hover
+            return result.star;
+        }
+
+        function getStarsInRadius(clientX, clientY, radius = 40) {
+            // Get all stars within radius of cursor
+            if (!state.map.visibleStars || state.map.visibleStars.length === 0) return [];
+            const stars = [];
+            const radiusSq = radius * radius;
+            for (const s of state.map.visibleStars) {
+                const dx = s._sx - clientX;
+                const dy = s._sy - clientY;
+                const d = dx * dx + dy * dy;
+                if (d < radiusSq) {
+                    stars.push({ star: s, dist: Math.sqrt(d) });
+                }
+            }
+            // Sort by distance
+            stars.sort((a, b) => a.dist - b.dist);
+            return stars.map(s => s.star);
+        }
+
+        // 2D map hover labels - shows all fonts within pointer radius
+        document.addEventListener('mousemove', e => {
+            if (state.viewMode !== '2d') return;
+
+            const stars = getStarsInRadius(e.clientX, e.clientY, 40);
+            if (stars.length > 0) {
+                // Show closest name only
+                mapLabel.textContent = stars[0].name;
+                mapLabel.style.left = (e.clientX + 12) + 'px';
+                mapLabel.style.top = (e.clientY - 8) + 'px';
+                mapLabel.style.display = 'block';
+            } else {
+                mapLabel.style.display = 'none';
+            }
+        });
+
+        // Click handler - only opens font if click is near a star
+        document.addEventListener('click', e => {
+            if (state.viewMode !== '2d') return;
+
+            // Only skip clicks on modal itself
+            if (e.target.closest('#specimen-modal') || e.target.closest('#modal-overlay')) return;
+
+            // Close modal first if open
+            if (state.modalOpen) {
+                closeSpecimenModal();
+                return;
+            }
+
+            // Skip if clicking on interactive UI elements (buttons, inputs)
+            if (e.target.closest('button') || e.target.closest('input') ||
+                e.target.closest('#view-toggle')) return;
+
+            // Only open font if click is within 50 pixels of a star
+            const result = getClosestStar(e.clientX, e.clientY);
+            if (result && result.star && result.dist < 50) {
+                showSpecimen(result.star);
+            }
+        });
+
+        window.addEventListener('wheel', e => {
+            if (state.viewMode === '2d') {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+                const w = mapCanvas.width;
+                const h = mapCanvas.height;
+
+                // Position of mouse relative to center + offset
+                const relX = mouseX - w / 2 - state.map.offsetX;
+                const relY = mouseY - h / 2 - state.map.offsetY;
+
+                const oldZoom = state.map.zoom;
+                state.map.zoom *= e.deltaY > 0 ? 0.97 : 1.03;
+                state.map.zoom = Math.max(0.1, Math.min(200, state.map.zoom));
+
+                // Adjust offset to keep mouse point stationary
+                const zoomRatio = state.map.zoom / oldZoom;
+                state.map.offsetX -= relX * (zoomRatio - 1);
+                state.map.offsetY -= relY * (zoomRatio - 1);
+
+                requestMapRender();
+            }
+        }, { passive: false, capture: true });
+
         // Input
-        document.addEventListener('keydown', e => state.keys[e.code] = true);
+        document.addEventListener('keydown', e => {
+            state.keys[e.code] = true;
+            // M key toggles between 3D and 2D view
+            if (e.code === 'KeyM') viewToggle.click();
+
+            // 2D map keyboard navigation
+            if (state.viewMode === '2d') {
+                const moveSpeed = 30;
+                let moved = false;
+                if (e.code === 'KeyW' || e.code === 'ArrowUp') { state.map.offsetY += moveSpeed; moved = true; }
+                if (e.code === 'KeyS' || e.code === 'ArrowDown') { state.map.offsetY -= moveSpeed; moved = true; }
+                if (e.code === 'KeyA' || e.code === 'ArrowLeft') { state.map.offsetX += moveSpeed; moved = true; }
+                if (e.code === 'KeyD' || e.code === 'ArrowRight') { state.map.offsetX -= moveSpeed; moved = true; }
+                if (moved) {
+                    e.preventDefault();
+                    requestMapRender();
+                }
+            }
+        });
         document.addEventListener('keyup', e => state.keys[e.code] = false);
 
         // Mouse state
@@ -625,8 +1323,9 @@
             mouseInWindow = false;
         });
 
-        // Mouse down - enable dragging from anywhere
+        // Mouse down - enable dragging from anywhere (3D mode only)
         document.addEventListener('mousedown', (e) => {
+            if (state.viewMode === '2d') return; // Skip in 2D mode
             if (e.button === 0) {
                 // Only block if clicking on modal
                 const target = e.target;
@@ -642,21 +1341,25 @@
             }
         });
 
-        // Mouse up - just reset the flag
+        // Mouse up - just reset the flag (3D mode only)
         document.addEventListener('mouseup', (e) => {
+            if (state.viewMode === '2d') return; // Skip in 2D mode
             if (e.button === 0) {
                 isMouseDown = false;
             }
         });
 
-        // Use click event for selection - on document to catch all clicks
+        // Use click event for selection - on document to catch all clicks (3D mode only)
         document.addEventListener('click', (e) => {
-            // Skip if clicking on modal elements
+            if (state.viewMode === '2d') return; // Skip in 2D mode
+            // Skip if clicking on modal elements or UI
             const target = e.target;
             const isModalClick = target.closest('#specimen-modal') ||
                                  target.closest('#modal-overlay') ||
                                  target.closest('#return-btn') ||
-                                 target.closest('#loading');
+                                 target.closest('#loading') ||
+                                 target.closest('#view-toggle') ||
+                                 target.closest('#top-bar');
 
             if (isModalClick) return;
 
@@ -687,14 +1390,21 @@
 
         function resetToCenter() {
             if (state.bounds) {
+                // Reset 3D position
                 state.position.set(
                     (state.bounds.min_x + state.bounds.max_x) / 2,
                     (state.bounds.min_y + state.bounds.max_y) / 2,
                     (state.bounds.min_z + state.bounds.max_z) / 2
                 );
                 state.velocity.set(0, 0, 0);
-                state.rotation.x = 0;
-                state.rotation.y = 0;
+                state.rotation.identity();
+
+                // Reset 2D map position
+                state.map.offsetX = 0;
+                state.map.offsetY = 0;
+                state.map.zoom = 1;
+                state.map.needsRender = true;
+
                 document.getElementById('void-warning').style.display = 'none';
             }
         }
@@ -754,14 +1464,57 @@
             }
         }
 
+        // Update crosshair target display
+        function updateCrosshairTarget() {
+            if (state.viewMode !== '3d' || !state.stars || state.stars.length === 0) return;
+
+            const targetEl = document.getElementById('crosshair-target');
+            if (!targetEl) return;
+
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            let bestStar = null;
+            let bestScreenDist = Infinity;
+
+            for (const star of state.stars) {
+                const pos = new THREE.Vector3(star.x * SCALE, star.y * SCALE, star.z * SCALE);
+                pos.project(camera);
+
+                if (pos.z > 1) continue;
+
+                const screenX = (pos.x * 0.5 + 0.5) * window.innerWidth;
+                const screenY = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+
+                const screenDist = Math.sqrt(
+                    (screenX - centerX) ** 2 +
+                    (screenY - centerY) ** 2
+                );
+
+                if (screenDist < bestScreenDist && screenDist < 100) {
+                    bestScreenDist = screenDist;
+                    bestStar = star;
+                }
+            }
+
+            if (bestStar) {
+                targetEl.textContent = bestStar.name;
+            } else {
+                targetEl.textContent = '';
+            }
+        }
+
         document.addEventListener('wheel', e => {
-            state.speed = Math.max(0.01, Math.min(0.5, state.speed * (e.deltaY > 0 ? 0.85 : 1.15)));
+            if (state.viewMode === '3d') {
+                state.speed = Math.max(0.01, Math.min(0.5, state.speed * (e.deltaY > 0 ? 1.05 : 0.95)));
+            }
         });
 
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            resizeMap();
         });
 
         const SCALE = 3.0;
@@ -964,18 +1717,286 @@
         }
 
         function update(dt) {
-            const forward = new THREE.Vector3(0, 0, -1);
-            const right = new THREE.Vector3(1, 0, 0);
-
-            forward.applyEuler(new THREE.Euler(state.rotation.x, state.rotation.y, 0, 'YXZ'));
-            right.applyEuler(new THREE.Euler(0, state.rotation.y, 0, 'YXZ'));
+            // Calculate forward/right from current rotation quaternion
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(state.rotation);
+            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(state.rotation);
 
             const speed = state.speed * dt * 0.002;
-            // WASD + Arrow keys for movement
-            if (state.keys['KeyW'] || state.keys['ArrowUp']) state.velocity.addScaledVector(forward, speed);
-            if (state.keys['KeyS'] || state.keys['ArrowDown']) state.velocity.addScaledVector(forward, -speed);
-            if (state.keys['KeyA'] || state.keys['ArrowLeft']) state.velocity.addScaledVector(right, -speed);
-            if (state.keys['KeyD'] || state.keys['ArrowRight']) state.velocity.addScaledVector(right, speed);
+
+            // Controller support with configurable mapping + simple in-page mapper
+            // Mappings are saved per-gamepad id in localStorage under 'gamepadMappings'
+            const gamepadMappings = JSON.parse(localStorage.getItem('gamepadMappings') || '{}');
+
+            const defaultMapping = {
+                select: 1,   // A on Nintendo-style controllers
+                cancel: 0,   // B on Nintendo-style controllers
+                toggle: 3,   // Y
+                start: 9,
+                selectBtn: 8,
+                l2: 6,
+                r2: 7
+            };
+
+            const getMappingFor = (gp) => {
+                if (!gp) return defaultMapping;
+                return gamepadMappings[gp.id] || (gp.mapping === 'standard' ? defaultMapping : defaultMapping);
+            };
+
+            // Minimal in-page mapper UI (click "Gamepad Mapper" -> click an action -> press a controller button)
+            if (!document.getElementById('gp-map-btn')) {
+                const btn = document.createElement('button');
+                btn.id = 'gp-map-btn';
+                btn.textContent = 'Gamepad Mapper';
+                btn.style.position = 'fixed';
+                btn.style.left = '8px';
+                btn.style.bottom = '8px';
+                btn.style.zIndex = 2000;
+                btn.style.padding = '6px 8px';
+                btn.style.background = '#222';
+                btn.style.color = '#fff';
+                btn.style.border = '1px solid #444';
+                document.body.appendChild(btn);
+
+                const mapper = document.createElement('div');
+                mapper.id = 'gp-mapper';
+                mapper.style.position = 'fixed';
+                mapper.style.left = '8px';
+                mapper.style.bottom = '46px';
+                mapper.style.zIndex = 2000;
+                mapper.style.padding = '8px';
+                mapper.style.background = 'rgba(0,0,0,0.85)';
+                mapper.style.color = '#fff';
+                mapper.style.fontSize = '13px';
+                mapper.style.display = 'none';
+                mapper.innerHTML = '<div style="max-width:260px">Gamepad Mapper<br/><small>Click an action, then press a controller button to assign. Saved per device.</small><div id="gp-actions"></div><div style="margin-top:6px"><button id="gp-close">Close</button> <button id="gp-clear">Clear for current device</button></div></div>';
+                document.body.appendChild(mapper);
+
+                const actions = ['select', 'toggle', 'reset', 'l2', 'r2'];
+                const actionsNode = mapper.querySelector('#gp-actions');
+                actions.forEach(a => {
+                    const row = document.createElement('div');
+                    row.style.marginTop = '6px';
+                    row.innerHTML = `<strong>${a}</strong>: <button data-action="${a}">Assign</button> <span id="assigned-${a}"></span>`;
+                    actionsNode.appendChild(row);
+                });
+
+                let awaiting = null;
+                mapper.addEventListener('click', (e) => {
+                    const action = e.target.dataset && e.target.dataset.action;
+                    if (action) {
+                        awaiting = action;
+                        e.target.textContent = 'Press button...';
+                    }
+                });
+
+                btn.addEventListener('click', () => {
+                    mapper.style.display = mapper.style.display === 'none' ? 'block' : 'none';
+                    btn.textContent = mapper.style.display === 'none' ? 'Gamepad Mapper' : 'Close Mapper';
+                });
+                mapper.querySelector('#gp-close').addEventListener('click', () => { mapper.style.display = 'none'; btn.textContent = 'Gamepad Mapper'; awaiting = null; });
+                mapper.querySelector('#gp-clear').addEventListener('click', () => {
+                    const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+                    for (const g of gps) { if (!g) continue; delete gamepadMappings[g.id]; }
+                    localStorage.setItem('gamepadMappings', JSON.stringify(gamepadMappings));
+                    for (const a of actions) { const el = document.getElementById('assigned-'+a); if (el) el.textContent = ''; }
+                });
+
+                // expose setter used in update loop
+                window.__gpMapper = {
+                    isAwaiting: () => awaiting,
+                    assign: (action, idx, gpId) => {
+                        awaiting = null;
+                        // ensure mapping object exists for this id
+                        gamepadMappings[gpId] = gamepadMappings[gpId] || {};
+                        gamepadMappings[gpId][action] = idx;
+                        localStorage.setItem('gamepadMappings', JSON.stringify(gamepadMappings));
+                        const el = document.getElementById('assigned-' + action);
+                        if (el) el.textContent = idx;
+                    }
+                };
+            }
+
+            const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+            for (const gp of gamepads) {
+                if (!gp) continue;
+
+                const mapping = getMappingFor(gp);
+                const deadZone = 0.1;
+                const moveSpeed = speed * 2;
+                const rotSpeed = 0.016;
+
+                // Left stick & Right stick behavior depends on view mode
+                const leftX = Math.abs(gp.axes[0]) > deadZone ? gp.axes[0] : 0;
+                const leftY = Math.abs(gp.axes[1]) > deadZone ? gp.axes[1] : 0;
+                const rightX = Math.abs(gp.axes[2]) > deadZone ? gp.axes[2] : 0;
+                const rightY = Math.abs(gp.axes[3]) > deadZone ? gp.axes[3] : 0;
+
+                const l2Idx = mapping.l2 !== undefined ? mapping.l2 : 6;
+                const r2Idx = mapping.r2 !== undefined ? mapping.r2 : 7;
+                const l2 = gp.buttons[l2Idx] ? gp.buttons[l2Idx].value : 0;
+                const r2 = gp.buttons[r2Idx] ? gp.buttons[r2Idx].value : 0;
+
+                if (state.viewMode === '2d') {
+                    // 2D MODE: Left stick pans, Right stick moves cursor, L2/R2 zoom
+                    const panSpeed = 8;
+                    const cursorSpeed = 5;
+
+                    // Left stick - pan map
+                    if (leftX !== 0 || leftY !== 0) {
+                        state.map.offsetX -= leftX * panSpeed;
+                        state.map.offsetY -= leftY * panSpeed;
+                        requestMapRender();
+                    }
+
+                    // Right stick - move cursor
+                    if (rightX !== 0 || rightY !== 0) {
+                        state.cursor2D.x += rightX * cursorSpeed;
+                        state.cursor2D.y += rightY * cursorSpeed;
+                        // Clamp to screen
+                        state.cursor2D.x = Math.max(0, Math.min(window.innerWidth, state.cursor2D.x));
+                        state.cursor2D.y = Math.max(0, Math.min(window.innerHeight, state.cursor2D.y));
+                        // Update crosshair position
+                        const crosshair = document.getElementById('crosshair');
+                        crosshair.style.left = state.cursor2D.x + 'px';
+                        crosshair.style.top = state.cursor2D.y + 'px';
+                        crosshair.style.transform = 'translate(-50%, -50%)';
+                    }
+
+                    // Always update hover label based on cursor position
+                    const stars = getStarsInRadius(state.cursor2D.x, state.cursor2D.y, 40);
+                    if (stars.length > 0) {
+                        mapLabel.textContent = stars[0].name;
+                        mapLabel.style.left = (state.cursor2D.x + 15) + 'px';
+                        mapLabel.style.top = (state.cursor2D.y - 10) + 'px';
+                        mapLabel.style.display = 'block';
+                    } else {
+                        mapLabel.style.display = 'none';
+                    }
+
+                    // L2/R2 - zoom around cursor position
+                    if (r2 > 0.1 || l2 > 0.1) {
+                        const w = window.innerWidth;
+                        const h = window.innerHeight;
+                        // Zoom around cursor position
+                        const relX = state.cursor2D.x - w / 2 - state.map.offsetX;
+                        const relY = state.cursor2D.y - h / 2 - state.map.offsetY;
+
+                        const oldZoom = state.map.zoom;
+                        if (r2 > 0.1) {
+                            state.map.zoom = Math.min(200, state.map.zoom * (1 + r2 * 0.04));
+                        }
+                        if (l2 > 0.1) {
+                            state.map.zoom = Math.max(0.1, state.map.zoom * (1 - l2 * 0.04));
+                        }
+
+                        // Adjust offset to keep cursor point stationary
+                        const zoomRatio = state.map.zoom / oldZoom;
+                        state.map.offsetX -= relX * (zoomRatio - 1);
+                        state.map.offsetY -= relY * (zoomRatio - 1);
+
+                        mapLabel.style.display = 'none';
+                        requestMapRender();
+                    }
+                } else {
+                    // 3D MODE: Left stick moves, Right stick rotates, L2/R2 speed
+                    if (leftY !== 0) state.velocity.addScaledVector(forward, -leftY * moveSpeed);
+                    if (leftX !== 0) state.velocity.addScaledVector(right, leftX * moveSpeed);
+
+                    // Apply rotation using camera's local axes
+                    // This ensures drag direction always matches rotation direction on screen
+                    if (Math.abs(rightX) > 0.01 || Math.abs(rightY) > 0.01) {
+                        // Get camera's current local axes
+                        const localRight = new THREE.Vector3(1, 0, 0).applyQuaternion(state.rotation);
+                        const localUp = new THREE.Vector3(0, 1, 0).applyQuaternion(state.rotation);
+
+                        // Yaw around camera's local up (left drag = left rotation)
+                        const yawQuat = new THREE.Quaternion().setFromAxisAngle(localUp, -rightX * rotSpeed * 1.1);
+                        // Pitch around camera's local right (up drag = up rotation)
+                        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(localRight, -rightY * rotSpeed * 1.1);
+
+                        // Apply rotations
+                        state.rotation.premultiply(pitchQuat);
+                        state.rotation.premultiply(yawQuat);
+                        state.rotation.normalize();
+                    }
+
+                    // Triggers - speed control
+                    try {
+                        if (r2 > 0.1) state.speed = Math.min(0.5, state.speed * 1.02);
+                        if (l2 > 0.1) state.speed = Math.max(0.01, state.speed * 0.98);
+                    } catch (e) { /* ignore trigger errors */ }
+                }
+
+                // Helper to check button press by mapped index
+                const isPressedIdx = (idx) => idx !== undefined && gp.buttons[idx] && gp.buttons[idx].pressed;
+                const modal = document.getElementById('specimen-modal');
+                const modalOpen = modal && modal.style.display !== 'none';
+
+                // Mapper: if awaiting an action, capture the first pressed button and save mapping
+                try {
+                    const awaiting = window.__gpMapper && window.__gpMapper.isAwaiting && window.__gpMapper.isAwaiting();
+                    if (awaiting) {
+                        for (let i = 0; i < gp.buttons.length; i++) {
+                            if (gp.buttons[i] && gp.buttons[i].pressed) {
+                                window.__gpMapper.assign(awaiting, i, gp.id);
+                                break;
+                            }
+                        }
+                    }
+                } catch (e) {}
+
+                // Use mapped buttons for actions
+                // Default indices: some controllers (eg. 8bitdo) report A/B in different positions.
+                // For known 8bitdo devices prefer A=0 (select) and B=1 (cancel/deselect) unless overridden by mappings.
+                let defaultSelect = 1;
+                let defaultCancel = 0;
+                if (gp.id && (/8\s*-?bit/i.test(gp.id) || /8bitdo/i.test(gp.id))) {
+                    defaultSelect = 0; // A button
+                    defaultCancel = 1; // B button
+                }
+                const selectIdx = mapping.select !== undefined ? mapping.select : defaultSelect;
+                const cancelIdx = mapping.cancel !== undefined ? mapping.cancel : defaultCancel;
+                const toggleIdx = mapping.toggle !== undefined ? mapping.toggle : 3;
+                const startIdx = mapping.start !== undefined ? mapping.start : 9;
+                const selectBtnIdx = mapping.selectBtn !== undefined ? mapping.selectBtn : 8;
+
+                // Select (mapped) - select font at crosshair/cursor
+                if (isPressedIdx(selectIdx) && !state.gamepadSelectPressed) {
+                    state.gamepadSelectPressed = true;
+                    if (modalOpen) {
+                        // If modal is open, close it first
+                        closeSpecimenModal();
+                    } else {
+                        // Select font at crosshair position (use cursor in 2D mode)
+                        if (state.viewMode === '2d') {
+                            selectFontAtPosition(state.cursor2D.x, state.cursor2D.y);
+                        } else {
+                            selectFontAtPosition(window.innerWidth / 2, window.innerHeight / 2);
+                        }
+                    }
+                }
+                if (!isPressedIdx(selectIdx)) state.gamepadSelectPressed = false;
+
+                // Cancel mapped - close modal
+                if (isPressedIdx(cancelIdx) && modalOpen && !state.gamepadCancelPressed) {
+                    state.gamepadCancelPressed = true;
+                    closeSpecimenModal();
+                }
+                if (!isPressedIdx(cancelIdx)) state.gamepadCancelPressed = false;
+
+                // Toggle mapped - toggle 2D/3D view
+                if (isPressedIdx(toggleIdx) && !state.gamepadTogglePressed) {
+                    state.gamepadTogglePressed = true;
+                    document.getElementById('view-toggle').click();
+                }
+                if (!isPressedIdx(toggleIdx)) state.gamepadTogglePressed = false;
+
+                // Reset position - Start, Select, or R1 (right bumper)
+                const r1Idx = mapping.r1 !== undefined ? mapping.r1 : 5;
+                if (isPressedIdx(startIdx) || isPressedIdx(selectBtnIdx) || isPressedIdx(r1Idx)) {
+                    resetToCenter();
+                }
+            }
 
             state.position.add(state.velocity);
             state.velocity.multiplyScalar(state.friction);
@@ -993,41 +2014,16 @@
                 state.keys['KeyR'] = false; // Prevent repeated reset
             }
 
-            // Rotate based on mouse position relative to center (only if mouse is in window)
-            if (!state.modalOpen && mouseInWindow) {
-                const centerX = window.innerWidth / 2;
-                const centerY = window.innerHeight / 2;
-
-                // Calculate offset from center (-1 to 1)
-                const offsetX = (mouseX - centerX) / centerX;
-                const offsetY = (mouseY - centerY) / centerY;
-
-                // Dead zone in the middle (20% from center = no rotation)
-                const deadZone = 0.2;
-
-                // Apply rotation based on offset (with dead zone)
-                if (Math.abs(offsetX) > deadZone) {
-                    const strength = (Math.abs(offsetX) - deadZone) / (1 - deadZone);
-                    const rotSpeed = strength * 0.0012 * dt * -Math.sign(offsetX);
-                    state.rotation.y += rotSpeed;
-                }
-                if (Math.abs(offsetY) > deadZone) {
-                    const strength = (Math.abs(offsetY) - deadZone) / (1 - deadZone);
-                    const rotSpeed = strength * 0.0012 * dt * Math.sign(offsetY);
-                    state.rotation.x -= rotSpeed;
-                }
-
-                // Clamp pitch to prevent gimbal lock
-                state.rotation.x = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, state.rotation.x));
-            }
+            // No rotation limits - free rotation
 
             camera.position.copy(state.position);
-            camera.rotation.set(state.rotation.x, state.rotation.y, 0, 'YXZ');
+            // Apply rotation directly from quaternion state
+            camera.quaternion.copy(state.rotation);
 
             // Update HUD
             document.getElementById('position').textContent =
                 `POSITION (${state.position.x.toFixed(1)}, ${state.position.y.toFixed(1)}, ${state.position.z.toFixed(1)})`;
-            document.getElementById('speed-display').textContent = `SPEED: ${(state.speed * 1000).toFixed(0)}%`;
+            document.getElementById('speed-text').textContent = `SPEED: ${(state.speed * 1000).toFixed(0)}%`;
             document.getElementById('stars-count').textContent = `STARS: ${state.stars.length.toLocaleString()}`;
 
             // Preview update
@@ -1055,9 +2051,9 @@
                     document.getElementById('preview-image').src = `data:image/png;base64,${data.image}`;
                 }
 
-                // Check if in the void (nearest star is far away)
+                // Check if in the void (nearest star is far away) - only in 3D mode
                 const voidWarning = document.getElementById('void-warning');
-                if (data.neighbors && data.neighbors.length > 0) {
+                if (state.viewMode === '3d' && data.neighbors && data.neighbors.length > 0) {
                     const nearestDist = data.neighbors[0].distance;
                     // Show warning if nearest star is more than 1.5 units away
                     if (nearestDist > 1.5) {
@@ -1065,6 +2061,8 @@
                     } else {
                         voidWarning.style.display = 'none';
                     }
+                } else {
+                    voidWarning.style.display = 'none';
                 }
 
                 if (data.neighbors) {
@@ -1089,7 +2087,7 @@
 
             update(dt);
             updateLabels();
-            updateProximityLabel();
+            updateCrosshairTarget();
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
@@ -1134,7 +2132,10 @@
                 setTimeout(() => {
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('top-bar').style.display = 'flex';
+                    document.getElementById('speed-display').style.display = 'block';
                     document.getElementById('ui-container').style.display = 'grid';
+                    document.getElementById('crosshair').style.display = 'block';
+                    document.getElementById('crosshair-target').style.display = 'block';
 
                     updatePreview();
                     requestAnimationFrame(animate);
